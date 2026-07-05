@@ -1,0 +1,2040 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>ThuisApp</title>
+<meta name="app-version" content="1783263443">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+/* OurHome kleurpalet: lichtblauw #90B0DC, wit, zachtgroen, warm-oranje accenten */
+:root{
+  --blue:#6A9FD4;--blue-light:#E8F2FB;--blue-dark:#3A6FA8;
+  --green:#6DBF87;--green-light:#E8F7ED;
+  --orange:#F5A623;--orange-light:#FEF5E7;
+  --pink:#E8728A;--pink-light:#FDEEF1;
+  --purple:#9B7DD4;--purple-light:#F0EBFB;
+  --bg:#F4F7FB;--surface:#FFFFFF;--surface2:#F0F4F9;
+  --border:#DDE5F0;--ink:#2C3E6B;--ink2:#5A6A8A;--muted:#94A3BE;
+  --shadow:0 2px 16px rgba(60,90,150,0.09);
+  --shadow-sm:0 1px 6px rgba(60,90,150,0.07);
+  --radius:16px;--radius-sm:10px;
+}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;padding-bottom:70px}
+
+/* TOP HEADER */
+.top-header{background:var(--blue);padding:16px 18px 12px;position:sticky;top:0;z-index:200}
+.top-header-row{display:flex;align-items:center;justify-content:space-between}
+.app-title{font-size:22px;font-weight:900;color:white;letter-spacing:-.5px}
+.header-actions{display:flex;align-items:center;gap:8px}
+.header-btn{background:rgba(255,255,255,.2);border:none;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:white;position:relative}
+.header-btn:hover{background:rgba(255,255,255,.3)}
+.notif-dot{position:absolute;top:4px;right:4px;width:8px;height:8px;background:var(--orange);border-radius:50%;border:2px solid var(--blue)}
+
+/* MEMBER STRIP */
+.member-strip{background:var(--blue);padding:0 18px 14px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+.member-strip::-webkit-scrollbar{display:none}
+.member-pill{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);border:2px solid transparent;border-radius:24px;padding:5px 12px 5px 6px;cursor:pointer;color:rgba(255,255,255,.8);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;white-space:nowrap;transition:all .2s;flex-shrink:0}
+.member-pill.active{background:white;color:var(--blue-dark);border-color:white}
+.member-avatar{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+.member-pill .pts-chip{background:var(--orange);color:white;border-radius:8px;padding:0 5px;font-size:9px;font-weight:800;line-height:14px}
+
+/* BOTTOM TAB BAR */
+.tab-bar{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid var(--border);display:flex;z-index:200;box-shadow:0 -2px 16px rgba(60,90,150,0.08)}
+.tab-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 2px 8px;cursor:pointer;color:var(--muted);transition:color .2s;border:none;border-top:2px solid transparent;background:none !important;font-family:'Nunito',sans-serif;-webkit-appearance:none;-webkit-tap-highlight-color:transparent;outline:none;box-shadow:none;min-width:0}
+.tab-item.active{color:var(--blue);border-top:2px solid var(--blue);background:none !important}
+.tab-icon{font-size:22px;line-height:1;margin-bottom:2px;position:relative}
+.tab-badge{position:absolute;top:-4px;right:-8px;background:var(--pink);color:white;border-radius:10px;padding:0 4px;font-size:8px;font-weight:800;min-width:14px;text-align:center;line-height:14px}
+.tab-label{font-size:9px;font-weight:700;letter-spacing:0;color:inherit}
+.more-menu-item{background:var(--surface2);border:none;border-radius:14px;padding:14px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;width:100%;-webkit-appearance:none;-webkit-tap-highlight-color:transparent;transition:background .15s}
+.more-menu-item:hover,.more-menu-item:active{background:var(--blue-light)}
+
+/* PANELS */
+.panel{display:none;padding:16px;flex:1;animation:fadeIn .15s ease}.panel.active{display:block}
+@keyframes fadeIn{from{opacity:.6;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* TOAST */
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--ink);color:white;padding:10px 20px;border-radius:24px;font-size:13px;font-weight:700;z-index:999;white-space:nowrap;transition:transform .3s cubic-bezier(.34,1.56,.64,1);box-shadow:0 4px 20px rgba(0,0,0,.18);pointer-events:none}
+#toast.show{transform:translateX(-50%) translateY(0)}
+
+/* SHARED COMPONENTS */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.section-title{font-size:18px;font-weight:800;color:var(--ink)}
+.btn{border:none;border-radius:var(--radius-sm);padding:10px 16px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-blue{background:var(--blue);color:white}.btn-blue:hover{background:var(--blue-dark)}
+.btn-green{background:var(--green);color:white}.btn-green:hover{filter:brightness(.9)}
+.btn-orange{background:var(--orange);color:white}.btn-orange:hover{filter:brightness(.9)}
+.btn-pink{background:var(--pink);color:white}.btn-pink:hover{filter:brightness(.9)}
+.btn-ghost{background:var(--surface2);border:1.5px solid var(--border);color:var(--ink2);font-size:12px}.btn-ghost:hover{background:var(--border)}
+.card{background:var(--surface);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;box-shadow:var(--shadow-sm)}
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty-state-icon{font-size:48px;margin-bottom:12px}
+.empty-state-text{font-size:15px;font-weight:600}
+.chip{border-radius:8px;padding:2px 8px;font-size:10px;font-weight:800;display:inline-flex;align-items:center;gap:3px}
+.chip-blue{background:var(--blue-light);color:var(--blue-dark)}
+.chip-green{background:var(--green-light);color:#2E8B57}
+.chip-orange{background:var(--orange-light);color:#C47A00}
+.chip-pink{background:var(--pink-light);color:#B84060}
+.chip-purple{background:var(--purple-light);color:var(--purple)}
+.chip-muted{background:var(--surface2);color:var(--ink2)}
+.count-badge{background:var(--orange);color:white;font-size:10px;font-weight:800;border-radius:10px;padding:2px 7px;min-width:20px;text-align:center}
+
+/* FORM INPUTS */
+.f-input{border:2px solid var(--border);border-radius:var(--radius-sm);padding:10px 13px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:600;background:white;color:var(--ink);outline:none;width:100%;transition:border-color .2s}
+.f-input:focus{border-color:var(--blue)}
+.f-input::placeholder{color:var(--muted);font-weight:500}
+.form-card{background:white;border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:var(--shadow-sm);border:2px solid var(--border)}
+.form-title{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px}
+.form-row{display:flex;gap:8px;margin-bottom:8px}
+.form-row .f-input{flex:1}
+.form-row:last-of-type{margin-bottom:0}
+
+/* FILTER PILLS */
+.filter-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:14px;padding-bottom:2px}
+.filter-row::-webkit-scrollbar{display:none}
+.filter-pill{background:white;border:2px solid var(--border);border-radius:24px;padding:5px 13px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink2);white-space:nowrap;transition:all .2s;display:flex;align-items:center;gap:5px}
+.filter-pill.active{background:var(--blue);border-color:var(--blue);color:white}
+.filter-pill .pill-count{background:rgba(255,255,255,.3);border-radius:8px;padding:0 5px;font-size:9px;font-weight:800}
+.filter-pill.active .pill-count{background:rgba(255,255,255,.3);color:white}
+.filter-pill:not(.active) .pill-count{background:var(--blue-light);color:var(--blue-dark)}
+
+/* PROGRESS BAR */
+.progress-wrap{background:var(--border);border-radius:6px;height:6px;margin-bottom:16px;overflow:hidden}
+.progress-bar{height:100%;background:var(--green);border-radius:6px;transition:width .4s}
+
+/* GROCERY */
+.grocery-item{display:flex;align-items:center;gap:10px;padding:11px 14px}
+.grocery-item.done{opacity:.4}
+.grocery-item label{flex:1;display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;font-weight:600}
+.grocery-item.done label span{text-decoration:line-through}
+.grocery-item input[type=checkbox]{width:20px;height:20px;accent-color:var(--green);flex-shrink:0;cursor:pointer}
+.qty-wrap{display:flex;align-items:center;gap:4px}
+.qty-btn{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);background:white;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;color:var(--ink);font-weight:700}
+.qty-btn:hover{background:var(--blue-light);border-color:var(--blue)}
+.qty-val{font-size:13px;font-weight:700;min-width:16px;text-align:center}
+.assign-btn{width:26px;height:26px;border-radius:50%;border:none;cursor:pointer;font-size:11px;font-weight:800;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.shop-sel{font-size:10px;font-weight:700;background:var(--blue-light);color:var(--blue-dark);border:1.5px solid var(--blue);border-radius:8px;padding:2px 5px;outline:none;cursor:pointer;flex-shrink:0}
+.cat-header{display:flex;align-items:center;gap:8px;padding:10px 4px 5px;border-bottom:2px solid var(--border);margin-bottom:4px}
+.cat-header-name{font-size:12px;font-weight:800;color:var(--ink2);flex:1}
+.cat-header-count{font-size:10px;color:var(--muted);font-weight:700}
+.del-btn{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:0;line-height:1;flex-shrink:0}
+.del-btn:hover{color:var(--pink)}
+
+/* TASKS */
+.task-item{display:flex;align-items:flex-start;gap:10px;padding:12px 14px}
+.task-item.done-task{opacity:.4}
+.task-check{width:22px;height:22px;accent-color:var(--orange);flex-shrink:0;margin-top:2px;cursor:pointer}
+.task-body{flex:1}
+.task-name{font-size:14px;font-weight:700;margin-bottom:4px}
+.done-task .task-name{text-decoration:line-through}
+.task-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.task-pending{background:var(--orange-light);border-radius:8px;padding:5px 10px;margin-top:6px;font-size:11px;font-weight:700;color:#C47A00;display:flex;align-items:center;justify-content:space-between}
+.approve-btn{background:var(--green);color:white;border:none;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:800;cursor:pointer}
+.nudge-btn{background:var(--blue-light);color:var(--blue-dark);border:none;border-radius:8px;padding:4px 8px;font-size:10px;font-weight:800;cursor:pointer;margin-left:4px}
+.task-form{background:white;border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:var(--shadow-sm);border:2px solid var(--border)}
+.penalty-note{font-size:10px;color:var(--muted);font-weight:600;margin-top:2px}
+
+/* CALENDAR */
+.month-nav{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.month-btn{background:white;border:2px solid var(--border);border-radius:var(--radius-sm);width:34px;height:34px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--ink)}
+.month-label{font-size:17px;font-weight:800;flex:1;text-align:center;color:var(--ink)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:16px}
+.cal-hdr{text-align:center;font-size:9px;font-weight:800;color:var(--muted);padding:4px 0;text-transform:uppercase;letter-spacing:.3px}
+.cal-day{aspect-ratio:1;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;color:var(--ink);position:relative}
+.cal-day:hover{background:var(--blue-light)}
+.cal-day.other{color:var(--border);cursor:default}.cal-day.other:hover{background:none}
+.cal-day.today{background:var(--blue);color:white;font-weight:900}
+.cal-day.sel:not(.today){background:var(--blue-light);color:var(--blue-dark);font-weight:900}
+.cal-count{background:var(--orange);color:white;font-size:7px;font-weight:800;border-radius:6px;padding:0 3px;line-height:11px;min-width:11px;text-align:center;margin-top:1px}
+.cal-day.today .cal-count,.cal-day.sel .cal-count{background:white;color:var(--blue-dark)}
+.evt-card{display:flex;gap:12px;align-items:flex-start;border-left:4px solid var(--blue);padding-left:10px}
+.evt-time{font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap;margin-top:2px}
+.evt-info{flex:1}.evt-title{font-size:14px;font-weight:700}
+.evt-meta{font-size:11px;color:var(--muted);font-weight:600;margin-top:2px}
+
+/* LIGHTS */
+.sys-tabs{display:flex;gap:8px;margin-bottom:14px}
+.sys-tab{flex:1;border:2px solid var(--border);border-radius:var(--radius-sm);padding:10px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;cursor:pointer;text-align:center;background:white;color:var(--ink2);transition:all .2s}
+.sys-tab.active-hue{background:var(--blue-light);border-color:var(--blue);color:var(--blue-dark)}
+.sys-tab.active-ikea{background:#FFF5E0;border-color:#F5A623;color:#A07000}
+.rooms-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.room-card{background:white;border-radius:var(--radius);padding:14px;cursor:pointer;transition:all .2s;border:2px solid var(--border);box-shadow:var(--shadow-sm)}
+.room-card.on{background:var(--orange-light);border-color:var(--orange)}
+.room-icon-big{font-size:28px;margin-bottom:6px}
+.room-name{font-size:13px;font-weight:700;margin-bottom:2px}
+.room-status{font-size:11px;color:var(--muted);font-weight:600}
+.room-card.on .room-status{color:var(--orange)}
+.room-sys-label{font-size:9px;color:var(--muted);font-weight:700;margin-top:2px}
+.toggle-pill{margin-top:8px;width:38px;height:20px;border-radius:10px;background:var(--border);position:relative;transition:background .2s}
+.room-card.on .toggle-pill{background:var(--orange)}
+.toggle-pill::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:white;top:2px;left:2px;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.room-card.on .toggle-pill::after{left:20px}
+.ctrl-card{background:white;border-radius:var(--radius);padding:14px;margin-bottom:10px;box-shadow:var(--shadow-sm)}
+.ctrl-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.ctrl-label{font-size:13px;font-weight:700}.ctrl-val{font-size:13px;font-weight:800;color:var(--orange)}
+input[type=range]{width:100%;accent-color:var(--orange);height:4px;cursor:pointer}
+.color-btns{display:flex;gap:8px;margin-top:12px}
+.color-btn{flex:1;border:2px solid var(--border);border-radius:var(--radius-sm);padding:8px 4px;font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;cursor:pointer;text-align:center;transition:all .15s}
+.color-btn.active{border-color:var(--orange);background:var(--orange-light)}
+.scene-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.scene-row::-webkit-scrollbar{display:none}
+.scene-tile{flex-shrink:0;background:white;border-radius:var(--radius);padding:12px 14px;cursor:pointer;border:2px solid var(--border);text-align:center;min-width:76px;box-shadow:var(--shadow-sm);transition:all .2s}
+.scene-tile.active{background:var(--green-light);border-color:var(--green)}
+.scene-icon{font-size:22px;margin-bottom:4px}
+.scene-name{font-size:10px;font-weight:700;color:var(--muted)}
+.scene-tile.active .scene-name{color:#2E8B57}
+.add-room-card{background:var(--surface2);border-radius:var(--radius);padding:12px;margin-bottom:12px;border:2px dashed var(--border)}
+.add-room-title{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
+.add-room-row{display:flex;gap:6px;flex-wrap:wrap}
+.add-room-row .f-input{flex:1;min-width:100px}
+
+/* RECIPES */
+.recipe-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.recipe-card{background:white;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm);cursor:pointer;border:2px solid var(--border);transition:transform .15s}
+.recipe-card:hover{transform:translateY(-2px)}
+.recipe-thumb{font-size:36px;text-align:center;padding:16px 0 10px;background:var(--surface2)}
+.recipe-body{padding:10px 12px}
+.recipe-name{font-size:13px;font-weight:800;margin-bottom:4px}
+.recipe-meta{font-size:10px;color:var(--muted);font-weight:600;display:flex;gap:8px}
+.recipe-detail-card{background:white;border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:var(--shadow-sm)}
+.recipe-detail-header{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px}
+.recipe-emoji-big{font-size:40px;flex-shrink:0}
+.recipe-detail-info{flex:1}
+.recipe-detail-name{font-size:18px;font-weight:900;margin-bottom:4px}
+.recipe-detail-meta{font-size:12px;color:var(--muted);font-weight:600;display:flex;gap:10px;flex-wrap:wrap}
+.back-btn{background:var(--surface2);border:none;border-radius:50%;width:34px;height:34px;font-size:16px;cursor:pointer;color:var(--ink);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.portions-row{display:flex;align-items:center;gap:10px;background:var(--surface2);border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:14px}
+.portions-lbl{font-size:13px;font-weight:700;flex:1}
+.portions-val{font-size:15px;font-weight:900;color:var(--orange);min-width:22px;text-align:center}
+.ing-list{margin-bottom:14px}
+.ing-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.ing-row:last-child{border-bottom:none}
+.ing-check{width:18px;height:18px;accent-color:var(--green);cursor:pointer;flex-shrink:0}
+.ing-name{flex:1;font-size:13px;font-weight:600}
+.ing-name.checked{text-decoration:line-through;color:var(--muted)}
+.ing-qty{font-size:12px;color:var(--muted);font-weight:700;white-space:nowrap}
+.add-to-cart{width:100%;background:var(--green);color:white;border:none;border-radius:var(--radius-sm);padding:13px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px}
+.steps-list{margin-top:10px}
+.step-row{display:flex;gap:10px;margin-bottom:12px}
+.step-num{width:26px;height:26px;border-radius:50%;background:var(--orange);color:white;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-text{font-size:13px;color:var(--ink2);line-height:1.5;flex:1;font-weight:600}
+.ai-card{background:linear-gradient(135deg,var(--blue-light),var(--green-light));border-radius:var(--radius);padding:14px;margin-bottom:14px;border:2px solid var(--blue)}
+.ai-title{font-size:14px;font-weight:800;margin-bottom:4px}
+.ai-desc{font-size:12px;color:var(--ink2);font-weight:600;margin-bottom:10px}
+.ai-row{display:flex;gap:8px}
+.ai-row input{flex:1;border:2px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:600;background:white;color:var(--ink);outline:none}
+.ai-row input:focus{border-color:var(--blue)}
+.ai-spinner-wrap{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--muted);padding:8px 0}
+.spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.nrf-card{background:white;border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:var(--shadow-sm);border:2px solid var(--border)}
+.nrf-title{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px}
+.ing-add-row{display:flex;gap:6px;margin-top:4px}
+.ing-add-row input{flex:1;border:2px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:600;background:white;color:var(--ink);outline:none}
+.ing-add-row input::placeholder{color:var(--muted)}
+.ing-add-btn{background:var(--blue);color:white;border:none;border-radius:var(--radius-sm);padding:0 14px;font-size:18px;cursor:pointer;font-weight:800}
+.ing-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.ing-chip-item{background:var(--green-light);color:#2E8B57;border-radius:8px;padding:3px 8px;font-size:11px;font-weight:700;cursor:pointer}
+.ing-chip-item:hover{background:var(--pink-light);color:var(--pink)}
+
+/* WEEKMENU */
+.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:16px}
+.week-day-cell{background:white;border-radius:var(--radius-sm);padding:8px 5px;text-align:center;min-height:92px;cursor:pointer;border:2px solid var(--border);transition:all .2s}
+.week-day-cell.today-cell{border-color:var(--orange)}
+.week-day-cell.has-meal{background:var(--green-light);border-color:var(--green)}
+.wk-day-name{font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:3px}
+.wk-day-num{font-size:14px;font-weight:900;color:var(--ink);margin-bottom:6px}
+.wk-meal-emoji{font-size:20px;margin-bottom:2px}
+.wk-meal-name{font-size:8px;font-weight:700;color:#2E8B57;line-height:1.2}
+.wk-empty{font-size:18px;opacity:.2;margin-top:4px}
+.meal-picker-card{background:white;border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:var(--shadow);border:2px solid var(--green)}
+.meal-picker-title{font-size:14px;font-weight:800;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.meal-picker-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.meal-pick-card{background:var(--surface2);border-radius:var(--radius-sm);padding:10px;cursor:pointer;display:flex;align-items:center;gap:8px;border:2px solid transparent;transition:all .2s}
+.meal-pick-card:hover{border-color:var(--green)}
+.meal-pick-emoji{font-size:22px;flex-shrink:0}
+.meal-pick-name{font-size:12px;font-weight:700}
+.meal-pick-meta{font-size:10px;color:var(--muted);font-weight:600}
+.add-week-btn{width:100%;background:var(--orange);color:white;border:none;border-radius:var(--radius-sm);padding:12px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;cursor:pointer;margin-top:10px}
+
+/* PUNTEN */
+.points-hero{background:linear-gradient(135deg,var(--blue) 0%,var(--blue-dark) 100%);border-radius:var(--radius);padding:18px;margin-bottom:16px;color:white}
+.points-hero-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;opacity:.8;margin-bottom:4px}
+.points-hero-sub{font-size:13px;font-weight:600;opacity:.8}
+.member-pts-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px}
+.member-pts-card{background:rgba(255,255,255,.15);border-radius:var(--radius-sm);padding:12px;text-align:center}
+.member-pts-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;margin:0 auto 6px;background:rgba(255,255,255,.25)}
+.member-pts-name{font-size:12px;font-weight:700;opacity:.9;margin-bottom:2px}
+.member-pts-val{font-size:22px;font-weight:900}
+.member-pts-lbl{font-size:9px;font-weight:700;opacity:.7;text-transform:uppercase;letter-spacing:.4px}
+.goal-bar-wrap{background:rgba(255,255,255,.2);border-radius:6px;height:5px;margin-top:6px;overflow:hidden}
+.goal-bar{height:100%;background:var(--orange);border-radius:6px;transition:width .4s}
+.goal-lbl{font-size:9px;opacity:.7;margin-top:2px;font-weight:600}
+.reward-card{display:flex;align-items:center;gap:12px;padding:12px 14px;border-left:4px solid var(--orange)}
+.reward-icon{font-size:26px;flex-shrink:0}
+.reward-info{flex:1}
+.reward-name{font-size:14px;font-weight:700}
+.reward-cost{font-size:12px;color:var(--orange);font-weight:800}
+.reward-actions{display:flex;flex-direction:column;gap:4px;align-items:flex-end}
+.redeem-btn{background:var(--orange);color:white;border:none;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap}
+.redeem-btn:disabled{opacity:.4;cursor:not-allowed}
+.add-reward-card{background:var(--surface2);border-radius:var(--radius);padding:14px;margin-bottom:14px;border:2px dashed var(--border)}
+.history-item{display:flex;align-items:center;gap:10px;padding:10px 14px}
+.history-pts{font-size:14px;font-weight:900;min-width:44px;text-align:right}
+
+/* CHAT */
+.chat-wrap{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.chat-bubble{max-width:78%;padding:10px 14px;border-radius:18px;font-size:13px;font-weight:600;line-height:1.4}
+.chat-bubble.me{background:var(--blue);color:white;align-self:flex-end;border-bottom-right-radius:4px}
+.chat-bubble.other{background:white;color:var(--ink);align-self:flex-start;border-bottom-left-radius:4px;box-shadow:var(--shadow-sm)}
+.chat-meta{font-size:10px;font-weight:700;margin-bottom:2px}
+.chat-me .chat-meta{text-align:right;color:var(--muted)}
+.chat-other .chat-meta{color:var(--muted)}
+.chat-input-row{position:sticky;bottom:70px;background:white;border-top:1px solid var(--border);padding:10px 16px;display:flex;gap:8px}
+.chat-input{flex:1;border:2px solid var(--border);border-radius:24px;padding:9px 14px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:600;background:white;color:var(--ink);outline:none}
+.chat-input:focus{border-color:var(--blue)}
+.chat-send{background:var(--blue);color:white;border:none;border-radius:50%;width:38px;height:38px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* NOTIFICATIONS */
+.notif-panel{position:fixed;top:0;right:-320px;width:300px;height:100vh;background:white;z-index:300;transition:right .3s cubic-bezier(.34,1.56,.64,1);padding:20px 16px;overflow-y:auto;box-shadow:-4px 0 24px rgba(60,90,150,.15);border-left:1px solid var(--border)}
+.notif-panel.open{right:0}
+.notif-panel-title{font-size:17px;font-weight:900;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.close-btn{background:var(--surface2);border:none;border-radius:50%;width:30px;height:30px;font-size:18px;cursor:pointer;color:var(--ink2)}
+.notif-item{background:var(--surface2);border-radius:var(--radius-sm);padding:11px 13px;margin-bottom:8px;border-left:4px solid var(--orange)}
+.notif-item.read{border-left-color:var(--border);opacity:.6}
+.notif-item-title{font-size:13px;font-weight:700;margin-bottom:2px}
+.notif-item-body{font-size:12px;color:var(--ink2);font-weight:600}
+.notif-item-time{font-size:10px;color:var(--muted);margin-top:4px;font-weight:600}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:250;display:none}.overlay.show{display:block}
+
+/* MEMBER MODAL */
+.modal{position:fixed;inset:0;z-index:400;display:none;align-items:flex-end;justify-content:center}.modal.open{display:flex}
+.modal-sheet{background:white;width:100%;max-width:480px;border-radius:24px 24px 0 0;padding:20px;max-height:85vh;overflow-y:auto;animation:slideUp .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-title{font-size:17px;font-weight:900;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.member-card{display:flex;align-items:center;gap:12px;background:var(--surface2);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px}
+.member-card-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900}
+.member-card-info{flex:1}
+.member-card-name{font-size:14px;font-weight:800}
+.member-card-role{font-size:11px;color:var(--muted);font-weight:600}
+.member-card-pts{font-size:13px;font-weight:800;color:var(--orange)}
+.perm-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;font-weight:600}
+.perm-toggle{width:40px;height:22px;border-radius:11px;background:var(--border);position:relative;cursor:pointer;border:none;transition:background .2s;flex-shrink:0}
+.perm-toggle.on{background:var(--green)}
+.perm-toggle::after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:white;top:2px;left:2px;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.perm-toggle.on::after{left:20px}
+.am-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.am-row input,.am-row select{flex:1;min-width:110px;border:2px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:600;background:white;color:var(--ink);outline:none}
+</style>
+</head>
+<body>
+<!-- LOGIN SCREEN -->
+<div id="loginScreen" style="position:fixed;inset:0;z-index:9999;background:linear-gradient(180deg,#6A9FD4,#3A6FA8);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;font-family:'Nunito',sans-serif">
+  <div style="background:white;border-radius:24px;padding:28px 24px;width:100%;max-width:340px;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+    <button onclick="forceHardReload()" style="width:100%;background:#E8728A;color:white;border:none;border-radius:10px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:sans-serif;margin-bottom:8px">↻ Vernieuw naar nieuwste versie</button>
+    <button onclick="testSupabase()" style="width:100%;background:#6A9FD4;color:white;border:none;border-radius:10px;padding:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:sans-serif;margin-bottom:14px">🔍 Test Supabase verbinding</button>
+    <div id="sbTestResult" style="font-size:11px;color:#555;margin-bottom:12px;text-align:left;background:#f5f5f5;padding:8px;border-radius:6px;display:none;max-height:200px;overflow-y:auto;font-family:monospace;word-break:break-all"></div>
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:44px;margin-bottom:4px">HOME</div>
+      <div style="font-size:22px;font-weight:900;color:#2C3E6B">ThuisApp</div>
+      <div style="font-size:12px;color:#999;margin-top:4px" id="loginSubtitle">Kies je profiel</div>
+    </div>
+    <div id="loginMemberGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px"></div>
+    <div id="loginPinSection" style="display:none">
+      <div id="loginPinName" style="text-align:center;font-size:14px;font-weight:800;color:#2C3E6B;margin-bottom:10px"></div>
+      <input type="password" id="loginPin" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="PIN" style="width:100%;text-align:center;font-size:22px;font-weight:800;letter-spacing:8px;padding:12px;border:2px solid #dde5f0;border-radius:12px;font-family:'Nunito',sans-serif;outline:none;-webkit-appearance:none;box-sizing:border-box;margin-bottom:10px"/>
+      <div id="loginError" style="color:#E8728A;font-size:12px;text-align:center;font-weight:700;min-height:16px;margin-bottom:8px"></div>
+      <div style="display:flex;gap:8px">
+        <button onclick="loginBack()" style="flex:1;background:#f0f4f9;color:#555;border:none;border-radius:12px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif">Terug</button>
+        <button onclick="loginSubmit()" style="flex:2;background:#6A9FD4;color:white;border:none;border-radius:12px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif">Inloggen</button>
+      </div>
+    </div>
+    <div id="loginFirstSetup" style="display:none">
+      <div style="font-size:13px;color:#555;margin-bottom:10px">Nog geen profielen. Maak eerst een ouder aan:</div>
+      <input type="text" id="setupName" placeholder="Naam" style="width:100%;padding:10px;border:2px solid #dde5f0;border-radius:10px;font-size:14px;margin-bottom:8px;font-family:'Nunito',sans-serif;outline:none;box-sizing:border-box"/>
+      <input type="password" id="setupPin" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="PIN (4 cijfers)" style="width:100%;padding:10px;border:2px solid #dde5f0;border-radius:10px;font-size:14px;margin-bottom:10px;font-family:'Nunito',sans-serif;outline:none;box-sizing:border-box"/>
+      <button onclick="loginFirstSetup()" style="width:100%;background:#6A9FD4;color:white;border:none;border-radius:12px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif">Aanmaken</button>
+    </div>
+    <div style="margin-top:16px;text-align:center;border-top:1px solid #eee;padding-top:12px">
+      <button onclick="resetLocalData()" style="background:none;border:none;color:#999;font-size:11px;text-decoration:underline;cursor:pointer;font-family:sans-serif">Cache wissen &amp; herladen</button>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- OVERLAY & MODALS -->
+<div class="overlay" id="overlay" onclick="closeAll()"></div>
+<div class="notif-panel" id="notifPanel">
+  <div class="notif-panel-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+    <span>Meldingen</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <button id="clearNotifsBtn" onclick="clearNotifs()" style="display:none;background:#FEF5E7;border:1px solid #F5A623;color:#C47A00;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:sans-serif">Wissen</button>
+      <button class="close-btn" onclick="closeAll()">&#x2715;</button>
+    </div>
+  </div>
+  <div id="notifList"></div>
+</div>
+<!-- PIN CHANGE MODAL -->
+<div id="pinModal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:20px">
+  <div style="background:white;border-radius:20px;padding:24px;width:100%;max-width:340px;box-sizing:border-box">
+    <div style="font-size:17px;font-weight:900;color:#2C3E6B;margin-bottom:4px" id="pinModalTitle">PIN wijzigen</div>
+    <div style="font-size:12px;color:#999;margin-bottom:16px" id="pinModalSubtitle"></div>
+    <input type="password" id="pinModalInput" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="Nieuwe PIN (min 4 cijfers)" style="width:100%;text-align:center;font-size:22px;font-weight:800;letter-spacing:6px;padding:12px;border:2px solid #dde5f0;border-radius:12px;font-family:sans-serif;outline:none;-webkit-appearance:none;box-sizing:border-box;margin-bottom:8px"/>
+    <div id="pinModalError" style="color:#E8728A;font-size:12px;text-align:center;font-weight:700;min-height:16px;margin-bottom:8px"></div>
+    <div style="display:flex;gap:8px">
+      <button onclick="closePinModal()" style="flex:1;background:#f0f4f9;color:#555;border:none;border-radius:12px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:sans-serif">Annuleren</button>
+      <button onclick="savePinModal()" style="flex:2;background:#6A9FD4;color:white;border:none;border-radius:12px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:sans-serif">Opslaan</button>
+    </div>
+  </div>
+</div>
+
+<div id="memberModal" style="display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.5);align-items:flex-end;justify-content:center">
+  <div style="background:white;width:100%;border-radius:20px 20px 0 0;padding:20px;padding-bottom:100px;max-height:88vh;overflow-y:auto;box-sizing:border-box">
+    <div style="font-size:17px;font-weight:900;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
+      Gezinsleden
+      <button onclick="closeMemberModal()" style="background:#f0f4f9;border:none;border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;color:#555">&#x2715;</button>
+    </div>
+    <div id="memberList"></div>
+    <div id="permSection" style="display:none">
+      <div style="font-size:12px;font-weight:800;color:#999;text-transform:uppercase;letter-spacing:.6px;margin:12px 0 8px">Rechten voor kinderen</div>
+      <div class="perm-row">Taken toevoegen <button class="perm-toggle" id="permAddTask" onclick="togglePerm('permAddTask')"></button></div>
+      <div class="perm-row">Boodschappen toevoegen <button class="perm-toggle on" id="permAddGrocery" onclick="togglePerm('permAddGrocery')"></button></div>
+      <div class="perm-row">Beloningen zien <button class="perm-toggle on" id="permSeeRewards" onclick="togglePerm('permSeeRewards')"></button></div>
+      <div class="perm-row">Agenda bekijken <button class="perm-toggle on" id="permCalendar" onclick="togglePerm('permCalendar')"></button></div>
+    </div>
+    <div style="font-size:12px;font-weight:800;color:#999;text-transform:uppercase;letter-spacing:.6px;margin:16px 0 8px">Lid toevoegen</div>
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <input type="text" id="newMemberName" placeholder="Naam" style="flex:1;border:2px solid #dde5f0;border-radius:10px;padding:10px 12px;font-size:14px;font-family:sans-serif;outline:none;-webkit-appearance:none"/>
+      <select id="newMemberRole" style="border:2px solid #dde5f0;border-radius:10px;padding:10px 12px;font-size:14px;font-family:sans-serif;outline:none;-webkit-appearance:none;background:white">
+        <option>Ouder</option><option>Kind</option><option>Overig</option>
+      </select>
+    </div>
+    <button onclick="addMember()" style="width:100%;background:#6A9FD4;color:white;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:sans-serif">Toevoegen</button>
+  </div>
+</div>
+<div id="toast"></div>
+
+<!-- HEADER -->
+<div class="top-header">
+  <div class="top-header-row">
+    <div class="app-title">&#127968; ThuisApp</div>
+    <div class="header-actions">
+      <div style="font-size:10px;color:rgba(255,255,255,.6);font-weight:700" id="saveLabel">Opgeslagen</div>
+      <button class="header-btn" onclick="openNotifPanel()">&#128276;<span class="notif-dot" id="notifDot" style="display:none"></span></button>
+      <button class="header-btn" onclick="logout()" title="Uitloggen" style="background:rgba(255,255,255,.15)">&#128274;</button>
+    </div>
+  </div>
+</div>
+<div class="member-strip" id="memberStrip"></div>
+
+<!-- PANELS -->
+<!-- HUIS DASHBOARD -->
+<div id="tab-huis" class="panel active" style="padding:0">
+  <div style="background:#6A9FD4;padding:20px 18px 24px;color:white">
+    <div style="font-size:13px;font-weight:600;opacity:.75;margin-bottom:4px" id="huisGreeting">Goedemorgen</div>
+    <div style="font-size:24px;font-weight:900;margin-bottom:2px">Welkom thuis &#128075;</div>
+    <div style="font-size:12px;opacity:.65" id="huisDate"></div>
+  </div>
+  <div style="padding:16px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+      <div onclick="var b=document.getElementById('tabBtnTaken');if(b)b.click()" style="background:white;border:2px solid #e0e0e0;border-radius:16px;padding:16px;cursor:pointer"><div style="font-size:26px;margin-bottom:8px">&#9989;</div><div style="font-size:14px;font-weight:800;color:#2C3E6B">Taken</div><div style="font-size:11px;color:#999;margin-top:2px" id="huisTaskCount">laden...</div></div>
+      <div onclick="var b=document.getElementById('tabBtnBoodschappen');if(b)b.click()" style="background:white;border:2px solid #e0e0e0;border-radius:16px;padding:16px;cursor:pointer"><div style="font-size:26px;margin-bottom:8px">&#128722;</div><div style="font-size:14px;font-weight:800;color:#2C3E6B">Boodschappen</div><div style="font-size:11px;color:#999;margin-top:2px" id="huisGrocCount">laden...</div></div>
+      <div onclick="var b=document.getElementById('tabBtnAgenda');if(b)b.click()" style="background:white;border:2px solid #e0e0e0;border-radius:16px;padding:16px;cursor:pointer"><div style="font-size:26px;margin-bottom:8px">&#128197;</div><div style="font-size:14px;font-weight:800;color:#2C3E6B">Agenda</div><div style="font-size:11px;color:#999;margin-top:2px" id="huisEvtCount">laden...</div></div>
+      <div onclick="if(window.showTabFromMore)showTabFromMore('beloningen')" style="background:white;border:2px solid #e0e0e0;border-radius:16px;padding:16px;cursor:pointer"><div style="font-size:26px;margin-bottom:8px">&#127942;</div><div style="font-size:14px;font-weight:800;color:#2C3E6B">Punten</div><div style="font-size:11px;color:#999;margin-top:2px" id="huisTopPts">laden...</div></div>
+    </div>
+    <div style="font-size:16px;font-weight:800;margin-bottom:10px">Vandaag te doen</div>
+    <div id="huisTaskList"></div>
+    <div style="font-size:16px;font-weight:800;margin:16px 0 10px">Afspraken vandaag</div>
+    <div id="huisEvtList"></div>
+    <div style="font-size:16px;font-weight:800;margin:16px 0 10px">Puntenstanden</div>
+    <div id="huisPtsList" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px"></div>
+  </div>
+</div>
+
+
+<div id="tab-boodschappen" class="panel">
+  <div style="margin-bottom:14px">
+    <div class="form-row">
+      <input class="f-input" type="text" id="groceryInput" placeholder="Artikel toevoegen…" onkeydown="if(event.key==='Enter')addGrocery()">
+      <select class="f-input" id="groceryCat" style="max-width:110px">
+        <option value="Groente">&#129382; Groente</option><option value="Zuivel">&#129472; Zuivel</option>
+        <option value="Vlees">&#129385; Vlees</option><option value="Bakkerij">&#127838; Bakkerij</option>
+        <option value="Dranken">&#129370; Dranken</option><option value="Huishouden">&#129529; Huis</option>
+        <option value="Diepvries">Diepvries</option><option value="Overig">&#128230; Overig</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <select class="f-input" id="groceryShop">
+        <option>Albert Heijn</option><option>Lidl</option><option>Jumbo</option><option>Aldi</option><option>Plus</option><option>Markt/Overig</option>
+      </select>
+      <button class="btn btn-green" onclick="addGrocery()">+ Toevoegen</button>
+    </div>
+  </div>
+  <div class="progress-wrap"><div class="progress-bar" id="groceryProgressBar" style="width:0%"></div></div>
+  <div class="section-header">
+    <span class="section-title">Boodschappenlijst <span class="count-badge" id="groceryCount">0</span></span>
+    <button class="btn btn-ghost" onclick="clearDone()">Klaar wissen</button>
+  </div>
+  <div class="filter-row" id="shopTabs"></div>
+  <div id="groceryList"></div>
+</div>
+
+<div id="tab-taken" class="panel">
+  <div class="task-form">
+    <div style="font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px">Taak toevoegen</div>
+    <div class="form-row"><input class="f-input" type="text" id="taskName" placeholder="Taaknaam…"/></div>
+    <div class="form-row">
+      <select class="f-input" id="taskAssign"><option value="">&#128100; Iedereen</option></select>
+      <select class="f-input" id="taskAssign2"><option value="">Extra persoon (optioneel)</option></select>
+    </div>
+    <div class="form-row">
+      <select class="f-input" id="taskRoom"><option value="">&#127968; Ruimte</option><option>Woonkamer</option><option>Keuken</option><option>Slaapkamer</option><option>Badkamer</option><option>Gang</option><option>Tuin</option><option>Buiten</option></select>
+      <select class="f-input" id="taskRecur"><option value="none">Eenmalig</option><option value="daily">Dagelijks</option><option value="weekly">Wekelijks</option><option value="monthly">Maandelijks</option><option value="rotate">Roterend &#128260;</option></select>
+    </div>
+    <div class="form-row">
+      <input class="f-input" type="date" id="taskDeadline"/>
+      <input class="f-input" type="number" id="taskPoints" placeholder="&#127942; Punten" min="0" value="10"/>
+    </div>
+    <div class="form-row">
+      <select class="f-input" id="taskApproval"><option value="0">Geen goedkeuring nodig</option><option value="1">Ouder moet goedkeuren</option></select>
+      <input class="f-input" type="number" id="taskPenalty" placeholder="Boete punten" min="0" value="0"/>
+    </div>
+    <div class="penalty-note">Boetepunten worden afgetrokken als de taak te laat is ingeleverd</div>
+    <div style="margin-top:10px"><button class="btn btn-orange" onclick="addTask()" style="width:100%">+ Taak toevoegen</button></div>
+  </div>
+  <div class="section-header">
+    <span class="section-title">Taken <span class="count-badge" id="taskCount">0</span></span>
+    <button class="btn btn-ghost" onclick="clearDoneTasks()">Klaar wissen</button>
+  </div>
+  <div class="filter-row" id="taskFilterTabs"></div>
+  <div id="taskList"></div>
+</div>
+
+<div id="tab-agenda" class="panel">
+  <div class="month-nav">
+    <button class="month-btn" onclick="changeMonth(-1)">&#8249;</button>
+    <span class="month-label" id="monthLabel"></span>
+    <button class="month-btn" onclick="changeMonth(1)">&#8250;</button>
+  </div>
+  <div class="cal-grid" id="calGrid"></div>
+  <div class="form-card">
+    <div class="form-title">Afspraak toevoegen</div>
+    <div class="form-row"><input class="f-input" type="text" id="evtTitle" placeholder="Omschrijving"/></div>
+    <div class="form-row"><input class="f-input" type="date" id="evtDate"/><input class="f-input" type="time" id="evtTime"/></div>
+    <div class="form-row">
+      <select class="f-input" id="evtWho"><option value="">&#128100; Iedereen</option></select>
+      <select class="f-input" id="evtRecur"><option value="none">Eenmalig</option><option value="weekly">Wekelijks &#128260;</option><option value="monthly">Maandelijks &#128260;</option></select>
+    </div>
+    <button class="btn btn-blue" onclick="addEvent()" style="width:100%">Toevoegen aan agenda</button>
+  </div>
+  <div class="section-title" id="eventsLabel" style="margin-bottom:10px;font-size:16px;font-weight:800">Aankomende afspraken</div>
+  <div id="eventsList"></div>
+</div>
+
+<div id="tab-recepten" class="panel">
+  <div id="recepten-overzicht">
+    <div class="ai-card">
+      <div class="ai-title">&#129302; Recept importeren via AI</div>
+      <div class="ai-desc">Beschrijf een gerecht — de app maakt het automatisch aan.</div>
+      <div class="ai-row"><input type="text" id="aiImportInput" placeholder="bv. lasagne voor 4 personen…"/><button class="btn btn-blue" onclick="aiImportRecipe()" style="padding:9px 14px;font-size:12px">Importeer</button></div>
+      <div class="ai-spinner-wrap" id="aiLoading" style="display:none"><div class="spinner"></div>AI bedenkt recept…</div>
+    </div>
+    <div class="section-header"><span class="section-title">Recepten</span><button class="btn btn-green" onclick="openNewRecipe()">+ Nieuw</button></div>
+    <div class="filter-row" id="recipeCatTabs"></div>
+    <div class="recipe-grid" id="recipeGrid"></div>
+  </div>
+  <div id="recepten-detail" style="display:none"><div class="recipe-detail-card" id="recipeDetailCard"></div></div>
+  <div id="recepten-nieuw" style="display:none">
+    <div class="nrf-card">
+      <div class="nrf-title" id="nrfFormTitle">Nieuw recept</div>
+      <div class="form-row"><input class="f-input" type="text" id="nrfName" placeholder="Naam van het recept…"/></div>
+      <div class="form-row"><input class="f-input" type="text" id="nrfEmoji" placeholder="&#127859;" style="max-width:70px"/><select class="f-input" id="nrfCat"><option>Pasta</option><option>Soep</option><option>Vlees</option><option>Vegetarisch</option><option>Vis</option><option>Ontbijt</option><option>Salade</option><option>Overig</option></select></div>
+      <div class="form-row"><input class="f-input" type="number" id="nrfTime" placeholder="Tijd (min)"/><input class="f-input" type="number" id="nrfPersons" placeholder="Personen" value="4"/></div>
+      <textarea class="f-input" id="nrfSteps" rows="3" placeholder="Bereidingswijze…" style="resize:vertical;margin-bottom:8px"></textarea>
+      <div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Ingrediënten</div>
+      <div class="ing-add-row"><input type="text" id="ingName" placeholder="Ingrediënt" onkeydown="if(event.key==='Enter')addIngredientToForm()"/><input type="text" id="ingQty" placeholder="Hoev." style="max-width:80px" onkeydown="if(event.key==='Enter')addIngredientToForm()"/><button class="ing-add-btn" onclick="addIngredientToForm()">+</button></div>
+      <div class="ing-chips" id="ingPreview"></div>
+    </div>
+    <div style="display:flex;gap:8px"><button class="btn btn-ghost" onclick="closeNewRecipe()" style="flex:1">Annuleren</button><button class="btn btn-green" onclick="saveNewRecipe()" style="flex:2">Opslaan</button></div>
+  </div>
+</div>
+
+<div id="tab-weekmenu" class="panel">
+  <div class="section-header">
+    <span class="section-title">Weekmenu</span>
+    <button class="btn btn-ghost" onclick="clearWeekMenu()">Wissen</button>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+    <button onclick="changeWeek(-1)" style="background:white;border:2px solid #dde5f0;border-radius:10px;padding:6px 14px;font-size:20px;cursor:pointer;color:#6A9FD4">&#8249;</button>
+    <div id="weekLabel" style="font-size:14px;font-weight:700;color:#2C3E6B;text-align:center"></div>
+    <button onclick="changeWeek(1)" style="background:white;border:2px solid #dde5f0;border-radius:10px;padding:6px 14px;font-size:20px;cursor:pointer;color:#6A9FD4">&#8250;</button>
+  </div>
+  <div class="week-grid" id="weekGrid"></div>
+  <div id="mealPicker" style="display:none">
+    <div class="meal-picker-card">
+      <div class="meal-picker-title"><span id="mealPickerDay">Recept kiezen</span><button class="close-btn" onclick="closeMealPicker()">&#x2715;</button></div>
+      <div class="meal-picker-grid" id="mealPickerGrid"></div>
+      <button class="add-week-btn" onclick="addWeekMenuToList()">&#128722; Alle ingrediënten naar boodschappen</button>
+    </div>
+  </div>
+  <div id="weekMenuEmpty" class="empty-state"><div class="empty-state-icon">&#128197;</div><div class="empty-state-text">Tik op een dag om een recept te plannen</div></div>
+</div>
+
+<div id="tab-beloningen" class="panel">
+  <div class="points-hero">
+    <div class="points-hero-title">Puntenoverzicht</div>
+    <div class="points-hero-sub">Verdien punten door taken te voltooien</div>
+    <div class="member-pts-grid" id="memberPointsGrid"></div>
+  </div>
+  <div class="section-header"><span class="section-title">Beloningen</span><button class="btn btn-orange" onclick="toggleAddReward()">+ Beloning</button></div>
+  <div id="addRewardForm" style="display:none">
+    <div class="add-reward-card">
+      <div class="form-row"><input class="f-input" type="text" id="rewardName" placeholder="Naam beloning…"/></div>
+      <div class="form-row"><input class="f-input" type="text" id="rewardIcon" placeholder="" style="max-width:70px"/><input class="f-input" type="number" id="rewardCost" placeholder="Punten nodig" min="1"/></div>
+      <div style="display:flex;gap:8px"><button class="btn btn-ghost" onclick="toggleAddReward()" style="flex:1">Annuleren</button><button class="btn btn-orange" onclick="saveReward()" style="flex:2">Opslaan</button></div>
+    </div>
+  </div>
+  <div id="rewardsList"></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin:16px 0 10px">
+    <div style="font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px">Puntengeschiedenis</div>
+    <button id="resetHistoryBtn" onclick="resetPointsHistory()" style="display:none;background:#FEF5E7;border:1px solid #F5A623;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;color:#C47A00">Wissen</button>
+  </div>
+  <div id="pointsHistory"></div>
+</div>
+
+<div id="tab-chat" class="panel" style="padding:0">
+  <div style="padding:16px;padding-bottom:0;font-size:18px;font-weight:900">&#128172; Gezinschat</div>
+  <div style="padding:12px 16px"><select class="f-input" id="chatAs" style="margin-bottom:0">
+    <option value="">Stuur als…</option>
+  </select></div>
+  <div class="chat-wrap" id="chatMessages" style="padding:0 16px 16px"></div>
+  <div class="chat-input-row">
+    <input class="chat-input" type="text" id="chatInput" placeholder="Stuur een bericht…" onkeydown="if(event.key==='Enter')sendChat()"/>
+    <button class="chat-send" onclick="sendChat()">&#10148;&#65039;</button>
+  </div>
+</div>
+
+<!-- MORE MENU OVERLAY -->
+<div id="moreOverlay" onclick="closeMoreMenu()" style="display:none;position:fixed;inset:0;z-index:290"></div>
+<div id="moreMenu" style="display:none;position:fixed;bottom:68px;left:0;right:0;background:white;border-top:1px solid #DDE5F0;border-radius:20px 20px 0 0;z-index:300;padding:16px 12px 20px;box-shadow:0 -4px 24px rgba(60,90,150,.12)">
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+    <button class="more-menu-item" onclick="showTabFromMore('recepten')"><div style="font-size:24px">&#127859;</div><div style="font-size:11px;font-weight:700;color:var(--ink2);margin-top:5px">Recepten</div></button>
+    <button class="more-menu-item" onclick="showTabFromMore('weekmenu')"><div style="font-size:24px">&#128198;</div><div style="font-size:11px;font-weight:700;color:var(--ink2);margin-top:5px">Weekmenu</div></button>
+    <button class="more-menu-item" onclick="showTabFromMore('beloningen')"><div style="font-size:24px">&#127942;</div><div style="font-size:11px;font-weight:700;color:var(--ink2);margin-top:5px">Punten</div></button>
+    <button class="more-menu-item" onclick="showTabFromMore('chat')"><div style="font-size:24px">&#128172;</div><div style="font-size:11px;font-weight:700;color:var(--ink2);margin-top:5px">Chat</div></button>
+  </div>
+</div>
+
+<!-- BOTTOM TAB BAR -->
+<div style="position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ddd;display:flex;z-index:9999;box-shadow:0 -2px 8px rgba(0,0,0,.06)">
+  <div id="tabBtnHuis" onclick="showTab('huis',this)" style="flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 0 8px;cursor:pointer;color:#999;font-size:9px;font-family:sans-serif;font-weight:700;-webkit-tap-highlight-color:transparent">
+    <span style="font-size:22px;line-height:1.2;display:block">🏠</span>Huis
+  </div>
+  <div id="tabBtnBoodschappen" onclick="showTab('boodschappen',this)" style="flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 0 8px;cursor:pointer;color:#999;font-size:9px;font-family:sans-serif;font-weight:700;-webkit-tap-highlight-color:transparent">
+    <span style="font-size:22px;line-height:1.2;display:block">🛒</span>Boodschappen
+  </div>
+  <div id="tabBtnTaken" onclick="showTab('taken',this)" style="flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 0 8px;cursor:pointer;color:#999;font-size:9px;font-family:sans-serif;font-weight:700;-webkit-tap-highlight-color:transparent">
+    <span style="font-size:22px;line-height:1.2;display:block">🗂</span>Taken
+  </div>
+  <div id="tabBtnAgenda" onclick="showTab('agenda',this)" style="flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 0 8px;cursor:pointer;color:#999;font-size:9px;font-family:sans-serif;font-weight:700;-webkit-tap-highlight-color:transparent">
+    <span style="font-size:22px;line-height:1.2;display:block">📅</span>Agenda
+  </div>
+  <div id="tabBtnMeer" onclick="toggleMoreMenu(this)" style="flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 0 8px;cursor:pointer;color:#999;font-size:9px;font-family:sans-serif;font-weight:700;-webkit-tap-highlight-color:transparent">
+    <span style="font-size:16px;line-height:1.6;display:block">···</span>Meer
+  </div>
+</div>
+
+<script>
+function testSupabase(){
+  var out=document.getElementById('sbTestResult');
+  if(!out)return;
+  out.style.display='block';
+  out.innerHTML='Test start...<br>URL: '+SUPABASE_URL.substring(0,40)+'<br>Fetching...<br>';
+  fetch(SUPABASE_URL+'/rest/v1/thuisapp_data?select=key,value,updated_at',{
+    method:'GET',
+    cache:'no-store',
+    headers:{
+      'apikey':SUPABASE_KEY,
+      'Authorization':'Bearer '+SUPABASE_KEY
+    }
+  })
+    .then(function(r){
+      out.innerHTML+='Status: '+r.status+' '+r.statusText+'<br>';
+      return r.text();
+    })
+    .then(function(txt){
+      out.innerHTML+='<br>Response ('+txt.length+' chars):<br>'+txt.substring(0,500);
+      // Try to parse
+      try{
+        var rows=JSON.parse(txt);
+        if(Array.isArray(rows)){
+          out.innerHTML+='<br><br><b>'+rows.length+' rijen gevonden:</b><br>';
+          rows.forEach(function(row){
+            var v=JSON.stringify(row.value).substring(0,100);
+            out.innerHTML+='• '+row.key+': '+v+'<br>';
+          });
+        }
+      }catch(e){
+        out.innerHTML+='<br>Parse fout: '+e.message;
+      }
+    })
+    .catch(function(e){
+      out.innerHTML+='<br>❌ FAIL: '+e.message;
+    });
+}
+
+// Unregister any old service workers - one time cleanup
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.getRegistrations().then(function(regs){
+    regs.forEach(function(reg){reg.unregister();});
+  }).catch(function(){});
+}
+
+function forceHardReload(){
+  // Nuclear option - clear EVERYTHING and force reload with new URL
+  try{localStorage.clear();}catch(e){}
+  try{sessionStorage.clear();}catch(e){}
+  try{
+    if('caches' in window){
+      caches.keys().then(function(names){
+        names.forEach(function(name){caches.delete(name);});
+      });
+    }
+  }catch(e){}
+  try{
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.getRegistrations().then(function(regs){
+        regs.forEach(function(r){r.unregister();});
+      });
+    }
+  }catch(e){}
+  // Wait a moment then reload with unique URL
+  setTimeout(function(){
+    var url=location.origin+location.pathname+'?v='+Date.now()+'&r='+Math.random();
+    location.replace(url);
+  },300);
+}
+
+// ── AUTO VERSION CHECK ──
+var APP_VERSION='1783263443';
+function checkAppVersion(){
+  // Fetch the current HTML from server with cache-buster
+  fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})
+    .then(function(r){return r.text();})
+    .then(function(html){
+      var m=html.match(/name="app-version" content="(\d+)"/);
+      if(m&&m[1]!==APP_VERSION){
+        console.log('New version available:',m[1],'current:',APP_VERSION);
+        // Clear caches and reload
+        try{
+          if('caches' in window){
+            caches.keys().then(function(names){
+              names.forEach(function(name){caches.delete(name);});
+            });
+          }
+        }catch(e){}
+        // Force hard reload
+        location.reload(true);
+      }
+    })
+    .catch(function(){});
+}
+// Check every 30 seconds
+setInterval(checkAppVersion,30000);
+// Check immediately on load
+setTimeout(checkAppVersion,2000);
+
+// ── LOGIN SYSTEEM ──
+var currentUser=null;
+var loginSelectedId=null;
+
+
+function resetLocalData(){
+  if(!confirm('Alle lokale data wissen en opnieuw laden vanaf server?'))return;
+  try{
+    var keys=[];
+    for(var i=0;i<localStorage.length;i++){
+      var k=localStorage.key(i);
+      if(k&&k.indexOf('th5_')===0)keys.push(k);
+    }
+    keys.forEach(function(k){localStorage.removeItem(k);});
+  }catch(e){}
+  location.reload();
+}
+
+function initLogin(){
+  renderLoginScreen();
+}
+
+function renderLoginScreen(){
+  var grid=document.getElementById('loginMemberGrid');
+  var firstSetup=document.getElementById('loginFirstSetup');
+  var pinSec=document.getElementById('loginPinSection');
+  var subtitle=document.getElementById('loginSubtitle');
+  if(!grid)return;
+  
+  // No members? Show first setup
+  if(!members||members.length===0){
+    if(grid)grid.style.display='none';
+    if(firstSetup)firstSetup.style.display='block';
+    if(subtitle)subtitle.textContent='Eerste keer instellen';
+    return;
+  }
+  if(grid)grid.style.display='grid';
+  if(firstSetup)firstSetup.style.display='none';
+  if(pinSec)pinSec.style.display='none';
+  if(subtitle)subtitle.textContent='Kies je profiel';
+  
+  grid.innerHTML=members.map(function(m){
+    return '<div data-mid="'+m.id+'" style="background:'+m.color+'22;border:2px solid '+m.color+';border-radius:14px;padding:14px 8px;text-align:center;cursor:pointer">'
+      +'<div style="width:44px;height:44px;border-radius:50%;background:'+m.color+';color:white;font-size:18px;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 6px">'+m.name.charAt(0)+'</div>'
+      +'<div style="font-size:12px;font-weight:800;color:#2C3E6B">'+m.name+'</div>'
+      +'<div style="font-size:10px;color:#666;font-weight:600">'+m.role+'</div>'
+      +'</div>';
+  }).join('');
+  
+  grid.onclick=function(e){
+    var el=e.target;
+    while(el&&el!==grid){
+      if(el.getAttribute&&el.getAttribute('data-mid')!==null)break;
+      el=el.parentNode;
+    }
+    if(!el||el===grid)return;
+    var mid=parseInt(el.getAttribute('data-mid'));
+    loginSelectPerson(mid);
+  };
+}
+
+function loginSelectPerson(mid){
+  var m=members.find(function(x){return x.id===mid;});
+  if(!m)return;
+  loginSelectedId=mid;
+  var grid=document.getElementById('loginMemberGrid');
+  var pinSec=document.getElementById('loginPinSection');
+  var nameEl=document.getElementById('loginPinName');
+  var errEl=document.getElementById('loginError');
+  var pinEl=document.getElementById('loginPin');
+  if(grid)grid.style.display='none';
+  if(pinSec)pinSec.style.display='block';
+  if(nameEl)nameEl.textContent='PIN voor '+m.name;
+  if(errEl)errEl.textContent='';
+  if(pinEl){pinEl.value='';setTimeout(function(){pinEl.focus();},100);}
+}
+
+function loginBack(){
+  loginSelectedId=null;
+  var grid=document.getElementById('loginMemberGrid');
+  var pinSec=document.getElementById('loginPinSection');
+  if(grid)grid.style.display='grid';
+  if(pinSec)pinSec.style.display='none';
+}
+
+function loginSubmit(){
+  var pinEl=document.getElementById('loginPin');
+  var errEl=document.getElementById('loginError');
+  if(!pinEl||!loginSelectedId)return;
+  var pin=pinEl.value.trim();
+  if(!perms.pins)perms.pins={};
+  var savedPin=perms.pins[loginSelectedId];
+  // No PIN set yet? Any pin works and gets saved
+  if(!savedPin){
+    if(pin.length<4){if(errEl)errEl.textContent='Kies een PIN van minimaal 4 cijfers';return;}
+    perms.pins[loginSelectedId]=pin;
+    saveAll();
+    doLogin(loginSelectedId);
+    return;
+  }
+  if(pin!==savedPin){
+    if(errEl)errEl.textContent='Onjuiste PIN';
+    if(pinEl)pinEl.value='';
+    return;
+  }
+  doLogin(loginSelectedId);
+}
+
+function doLogin(mid){
+  currentUser=mid;
+  try{localStorage.setItem('th5_currentUser',String(mid));}catch(e){}
+  var login=document.getElementById('loginScreen');
+  if(login)login.style.display='none';
+  // Set as active member
+  activeMember=mid;
+  renderMemberStrip();
+  renderTasks();
+  renderGroceries();
+  renderEvents();
+  renderHuis();
+  updateHistoryResetBtn();
+  var m=getMember(mid);
+  if(m)toast('Welkom terug '+m.name);
+}
+
+function loginFirstSetup(){
+  var nameEl=document.getElementById('setupName');
+  var pinEl=document.getElementById('setupPin');
+  if(!nameEl||!pinEl)return;
+  var name=nameEl.value.trim();
+  var pin=pinEl.value.trim();
+  if(!name){alert('Vul een naam in');return;}
+  if(pin.length<4){alert('PIN moet minimaal 4 cijfers zijn');return;}
+  var newM={id:++memberId,name:name,color:'#6A9FD4',role:'Ouder',points:0};
+  members.push(newM);
+  if(!perms.pins)perms.pins={};
+  perms.pins[newM.id]=pin;
+  saveAll();
+  doLogin(newM.id);
+}
+
+function logout(){
+  if(!confirm('Wil je uitloggen?'))return;
+  currentUser=null;
+  try{localStorage.removeItem('th5_currentUser');}catch(e){}
+  var login=document.getElementById('loginScreen');
+  if(login){login.style.display='flex';renderLoginScreen();}
+}
+
+// Check if already logged in on page load
+function checkAutoLogin(){
+  try{
+    var savedId=localStorage.getItem('th5_currentUser');
+    if(savedId){
+      var mid=parseInt(savedId);
+      var m=members.find(function(x){return x.id===mid;});
+      if(m){doLogin(mid);return true;}
+    }
+  }catch(e){}
+  return false;
+}
+
+
+var today=new Date();
+var MONTHS=['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
+var DSHORT=['Zo','Ma','Di','Wo','Do','Vr','Za'];
+var DNAMES=['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag'];
+var COLORS=['#6A9FD4','#F5A623','#6DBF87','#E8728A','#9B7DD4','#D4A843'];
+
+function sv(k,v){try{localStorage.setItem('th5_'+k,JSON.stringify(v))}catch(e){}}
+function ld(k,fb){try{var v=localStorage.getItem('th5_'+k);return v!==null?JSON.parse(v):fb}catch(e){return fb}}
+// ── SUPABASE INTEGRATIE ──
+var SUPABASE_URL='https://fviilnyjyebaftcnxpxr.supabase.co';
+var SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2aWlsbnlqeWViYWZ0Y254cHhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxMjM5NDMsImV4cCI6MjA5ODY5OTk0M30.E-_cm-3P-rXaabqaolvz8YjoUI7iMDM-OC6qWvB_OA0';
+var syncInterval=null;
+var lastSyncTime={};
+var isSyncing=false;
+
+function sbHeaders(){
+  return {
+    'apikey':SUPABASE_KEY,
+    'Authorization':'Bearer '+SUPABASE_KEY,
+    'Content-Type':'application/json',
+    'Prefer':'return=minimal'
+  };
+}
+
+function sbFetch(path,method,body){
+  var opts={method:method||'GET'};
+  var headers=sbHeaders();
+  opts.headers=headers;
+  if(body)opts.body=JSON.stringify(body);
+  return fetch(SUPABASE_URL+path,opts);
+}
+
+// Save one key to Supabase
+function sbSave(key,value){
+  try{
+    var xhr=new XMLHttpRequest();
+    xhr.open('POST',SUPABASE_URL+'/rest/v1/thuisapp_data?on_conflict=key',true);
+    xhr.setRequestHeader('apikey',SUPABASE_KEY);
+    xhr.setRequestHeader('Authorization','Bearer '+SUPABASE_KEY);
+    xhr.setRequestHeader('Content-Type','application/json');
+    xhr.setRequestHeader('Prefer','resolution=merge-duplicates,return=minimal');
+    xhr.onload=function(){
+      if(xhr.status<200||xhr.status>=300){
+        showSbDebug('sbSave FAIL '+key+' status:'+xhr.status);
+      }
+    };
+    xhr.onerror=function(){showSbDebug('sbSave ERR '+key);};
+    xhr.send(JSON.stringify({key:key,value:value,updated_at:new Date().toISOString()}));
+  }catch(e){showSbDebug('sbSave exception '+key+': '+e.message);}
+}
+
+function showSbDebug(msg){
+  var d=document.getElementById('sbDebug');
+  if(!d){
+    d=document.createElement('div');
+    d.id='sbDebug';
+    d.style.cssText='position:fixed;top:5px;left:5px;right:5px;background:rgba(0,0,0,.9);color:#0f0;font-family:monospace;font-size:10px;padding:6px;border-radius:6px;z-index:99999;max-height:200px;overflow-y:auto;line-height:1.4';
+    document.body.appendChild(d);
+    var close=document.createElement('button');
+    close.textContent='X';
+    close.style.cssText='position:absolute;top:2px;right:2px;background:#f00;color:white;border:none;border-radius:4px;padding:2px 6px;font-size:10px;cursor:pointer';
+    close.onclick=function(){d.style.display='none';};
+    d.appendChild(close);
+  }
+  d.style.display='block';
+  var line=document.createElement('div');
+  line.textContent=new Date().toLocaleTimeString()+' '+msg;
+  d.appendChild(line);
+  while(d.children.length>25)d.removeChild(d.children[1]);
+}
+
+
+// Load all data from Supabase
+function sbLoad(callback){
+  showSbDebug('sbLoad start');
+  lastSyncTime={};
+  if(isSyncing){if(callback)setTimeout(function(){callback();},500);return;}
+  isSyncing=true;
+  try{
+    var xhr=new XMLHttpRequest();
+    xhr.open('GET',SUPABASE_URL+'/rest/v1/thuisapp_data?select=key,value,updated_at',true);
+    xhr.setRequestHeader('apikey',SUPABASE_KEY);
+    xhr.setRequestHeader('Authorization','Bearer '+SUPABASE_KEY);
+    xhr.setRequestHeader('Cache-Control','no-cache');
+    xhr.onload=function(){
+      try{
+        if(xhr.status<200||xhr.status>=300){
+          showSbDebug('sbLoad FAIL status:'+xhr.status+' body:'+xhr.responseText.substring(0,100));
+          isSyncing=false;if(callback)callback();return;
+        }
+        var rows=JSON.parse(xhr.responseText);
+        showSbDebug('Got '+(rows.length||0)+' rows from Supabase');
+        if(!rows||!rows.length){isSyncing=false;if(callback)callback();return;}
+        for(var idx=0;idx<rows.length;idx++){
+          var row=rows[idx];
+          var key=row.key;
+          var val=row.value;
+          lastSyncTime[key]=row.updated_at||'';
+          if(key==='members'&&val&&val.length){members=val;sv('members',members);showSbDebug('Loaded '+members.length+' members: '+members.map(function(m){return m.name;}).join(','));}
+          else if(key==='groceries'&&val){groceries=val;sv('groceries',groceries);}
+          else if(key==='tasks'&&val){tasks=val;sv('tasks',tasks);}
+          else if(key==='events'&&val){events=val;sv('events',events);}
+          else if(key==='recipes'&&val){recipes=val;sv('recipes',recipes);}
+          else if(key==='weekMenu'&&val){weekMenu=val;sv('weekMenu',weekMenu);}
+          else if(key==='rewards'&&val){rewards=val;sv('rewards',rewards);}
+          else if(key==='pointsHistory'&&val){pointsHistory=val;sv('pointsHistory',pointsHistory);}
+          else if(key==='chats'&&val){chats=val;sv('chats',chats);}
+          else if(key==='perms'&&val){perms=val;sv('perms',perms);}
+        }
+        var loginScreen=document.getElementById('loginScreen');
+        if(loginScreen&&loginScreen.style.display!=='none'){
+          if(typeof renderLoginScreen==='function')renderLoginScreen();
+        }
+        showSbDebug('Sync complete');
+        isSyncing=false;
+        if(callback)callback();
+      }catch(e){
+        showSbDebug('sbLoad parse error: '+e.message);
+        isSyncing=false;
+        if(callback)callback();
+      }
+    };
+    xhr.onerror=function(){
+      showSbDebug('sbLoad network error');
+      isSyncing=false;
+      if(callback)callback();
+    };
+    xhr.send();
+  }catch(e){
+    showSbDebug('sbLoad exception: '+e.message);
+    isSyncing=false;
+    if(callback)callback();
+  }
+}
+
+// Push all data to Supabase after every local save
+var _sbSaveAll=function(){
+  sbSave('members',members);
+  sbSave('groceries',groceries);
+  sbSave('tasks',tasks);
+  sbSave('events',events);
+  sbSave('recipes',recipes);
+  sbSave('weekMenu',weekMenu);
+  sbSave('rewards',rewards);
+  sbSave('pointsHistory',pointsHistory);
+  sbSave('chats',chats);
+  sbSave('perms',perms);
+};
+
+// Show sync status
+function showSyncStatus(ok){
+  var el=document.getElementById('saveLabel');
+  if(!el)return;
+  el.textContent=ok?'Verbonden':'Offline';
+}
+
+// Start polling for changes every 5 seconds
+function startSync(){
+  // Initial load from Supabase
+  sbLoad();
+  // Poll every 5 seconds
+  syncInterval=setInterval(function(){sbLoad();},5000);
+  showSyncStatus(true);
+}
+
+// Init sync on page load
+setTimeout(function(){startSync();},1000);
+
+function saveAll(){
+  sv('members',members);sv('mId',memberId);
+  sv('groceries',groceries);sv('gId',groceryId);
+  sv('events',events);sv('eId',evtId);
+  sv('tasks',tasks);sv('tId',taskId);
+  sv('recipes',recipes);sv('rId',recipeId);
+  sv('weekMenu',weekMenu);
+  sv('rewards',rewards);sv('rwId',rewardId);
+  sv('pointsHistory',pointsHistory);
+  sv('chats',chats);sv('perms',perms);
+  var sl=document.getElementById('saveLabel');
+  if(sl)sl.textContent='Opslaan...';
+  // Sync to Supabase
+  if(typeof _sbSaveAll==='function')_sbSaveAll();
+  setTimeout(function(){var s=document.getElementById('saveLabel');if(s)s.textContent='Opgeslagen';},1500);
+}
+function fmtDate(y,m,d){return y+'-'+(m+1<10?'0'+(m+1):''+(m+1))+'-'+(d<10?'0'+d:''+d)}
+function todayStr(){return fmtDate(today.getFullYear(),today.getMonth(),today.getDate())}
+function isOverdue(ds){return ds&&ds<todayStr()}
+
+var members=ld('members',[{id:1,name:'Papa',color:'#6A9FD4',role:'Ouder',points:0},{id:2,name:'Mama',color:'#F5A623',role:'Ouder',points:0},{id:3,name:'Tom',color:'#6DBF87',role:'Kind',points:85}]);
+var memberId=ld('mId',10);
+var activeMember=null;
+var perms=ld('perms',{permAddTask:false,permAddGrocery:true,permSeeRewards:true,permCalendar:true,pins:{}});
+var activeShop='Alle winkels';
+var activeTaskFilter='Alle';
+
+var groceries=ld('groceries',[{id:1,name:'Melk',qty:1,done:false,cat:'Zuivel',shop:'Albert Heijn',assignedTo:null},{id:2,name:'Brood',qty:2,done:false,cat:'Bakkerij',shop:'Albert Heijn',assignedTo:1},{id:3,name:'Appels',qty:6,done:true,cat:'Groente',shop:'Lidl',assignedTo:2},{id:4,name:'Wijn',qty:1,done:false,cat:'Dranken',shop:'Jumbo',assignedTo:null}]);
+var groceryId=ld('gId',10);
+
+var tasks=ld('tasks',[{id:1,name:'Afwassen',assignedTo:[3],room:'Keuken',deadline:'',recur:'daily',points:10,penalty:0,approval:false,done:false,pending:false},{id:2,name:'Stofzuigen woonkamer',assignedTo:[null],room:'Woonkamer',deadline:'',recur:'weekly',points:20,penalty:5,approval:true,done:false,pending:false},{id:3,name:'Planten water geven',assignedTo:[2],room:'Tuin',deadline:'',recur:'weekly',points:5,penalty:0,approval:false,done:false,pending:false}]);
+var taskId=ld('tId',10);
+
+var curYear=today.getFullYear(),curMonth=today.getMonth(),selDay=today.getDate();
+var events=ld('events',[{id:1,title:'Tandarts',date:fmtDate(today.getFullYear(),today.getMonth(),today.getDate()),time:'10:00',who:1,recur:'none'},{id:2,title:'Verjaardag Oma',date:fmtDate(today.getFullYear(),today.getMonth(),today.getDate()+3),time:'',who:null,recur:'none'},{id:3,title:'Voetbaltraining',date:fmtDate(today.getFullYear(),today.getMonth(),today.getDate()+1),time:'17:30',who:3,recur:'weekly'}]);
+var evtId=ld('eId',10);
+
+var rooms=[];
+var roomsIkea=[];
+
+
+
+
+
+var recipes=ld('recipes',[{id:1,name:'Spaghetti Bolognese',emoji:'\uD83C\uDF5D',cat:'Pasta',time:40,persons:4,ingredients:[{name:'Spaghetti',qty:'400g',cat:'Bakkerij',shop:'Albert Heijn'},{name:'Gehakt',qty:'400g',cat:'Vlees',shop:'Albert Heijn'},{name:'Tomatensaus',qty:'1 pot',cat:'Overig',shop:'Albert Heijn'},{name:'Ui',qty:'1 stuk',cat:'Groente',shop:'Lidl'},{name:'Parmezaan',qty:'50g',cat:'Zuivel',shop:'Albert Heijn'}],steps:'Fruit ui. Voeg gehakt toe. Voeg tomatensaus toe en laat sudderen. Kook spaghetti. Serveer met parmezaan.'},{id:2,name:'Tomatensoep',emoji:'\uD83C\uDF45',cat:'Soep',time:25,persons:4,ingredients:[{name:'Tomaten blik',qty:'2 blikken',cat:'Overig',shop:'Jumbo'},{name:'Ui',qty:'2 stuks',cat:'Groente',shop:'Jumbo'},{name:'Bouillon',qty:'1 liter',cat:'Overig',shop:'Jumbo'},{name:'Room',qty:'100ml',cat:'Zuivel',shop:'Jumbo'}],steps:'Fruit ui. Voeg tomaten en bouillon toe. Pureer. Roer room erdoor.'},{id:3,name:'Avocado Toast',emoji:'\uD83E\uDD51',cat:'Ontbijt',time:10,persons:2,ingredients:[{name:'Zuurdesembrood',qty:'4 sneden',cat:'Bakkerij',shop:'Albert Heijn'},{name:'Avocado',qty:'2 stuks',cat:'Groente',shop:'Lidl'},{name:'Limoen',qty:'1 stuk',cat:'Groente',shop:'Lidl'}],steps:'Rooster brood. Prak avocado met limoen. Smeer op brood.'}]);
+var recipeId=ld('rId',10);
+var activeRecipeCat='Alle';
+var newIngredients=[];
+var checkedIngredients={};
+var curPortions=4;
+var curRecipeId=null;
+var weekMenu=ld('weekMenu',{});
+var selWeekDay=null;
+var weekOffset=0;
+
+var rewards=ld('rewards',[{id:1,icon:'\uD83C\uDF7F',name:'Filmavond uitzoeken',cost:50},{id:2,icon:'\uD83C\uDFAE',name:'1 uur extra gamen',cost:30},{id:3,icon:'\uD83C\uDF66',name:'Ijsje naar keuze',cost:20},{id:4,icon:'\uD83D\uDCB0',name:'Zakgeld \u20AC2',cost:100}]);
+var rewardId=ld('rwId',10);
+var pointsHistory=ld('pointsHistory',[]);
+var chats=ld('chats',[{id:1,from:1,text:'Wie kan vandaag boodschappen doen?',time:'10:32'},{id:2,from:2,text:'Ik doe het na het werk!',time:'10:45'},{id:3,from:3,text:'Ik heb de afwas al gedaan \uD83D\uDE0A',time:'11:01'}]);
+var chatId=ld('chatId',10);
+var notifications=[{id:1,title:'Voetbaltraining',body:'Tom \u2014 morgen om 17:30',time:'Vandaag',read:false},{id:2,title:'Goedkeuring nodig',body:'Tom heeft "Stofzuigen" ingeleverd',time:'Zojuist',read:false}];
+var notifId=10;
+
+// ── UTILS ──
+function getMember(id){return members.find(function(m){return m.id===id})}
+function toast(msg){var t=document.getElementById('toast');if(!t)return;t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},2400)}
+function closeAll(){document.getElementById('notifPanel').classList.remove('open');document.getElementById('overlay').classList.remove('show');var mm=document.getElementById('memberModal');if(mm)mm.style.display='none';}
+function showTab(tab,btn){document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active')});['tabBtnHuis','tabBtnBoodschappen','tabBtnTaken','tabBtnAgenda','tabBtnMeer'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.color='#999';});var panel=document.getElementById('tab-'+tab);if(panel)panel.classList.add('active');if(btn)btn.style.color='#6A9FD4';if(tab==='huis')renderHuis();}
+function updateNotifDot(){document.getElementById('notifDot').style.display=notifications.filter(function(n){return !n.read}).length?'flex':'none'}
+function openNotifPanel(){
+  renderNotifs();
+  document.getElementById('notifPanel').classList.add('open');
+  document.getElementById('overlay').classList.add('show');
+  // Show clear button only for parents
+  var clearBtn=document.getElementById('clearNotifsBtn');
+  var isOuder=currentUser&&getMember(currentUser)&&getMember(currentUser).role==='Ouder';
+  if(clearBtn)clearBtn.style.display=(isOuder&&notifications.length)?'block':'none';
+  setTimeout(function(){notifications.forEach(function(n){n.read=true});updateNotifDot();},1000);
+}
+function clearNotifs(){
+  var isOuder=currentUser&&getMember(currentUser)&&getMember(currentUser).role==='Ouder';
+  if(!isOuder){requestParentPin(function(){doClearNotifs();});return;}
+  doClearNotifs();
+}
+function doClearNotifs(){
+  if(!confirm('Alle meldingen wissen?'))return;
+  notifications=[];
+  updateNotifDot();
+  renderNotifs();
+  var clearBtn=document.getElementById('clearNotifsBtn');
+  if(clearBtn)clearBtn.style.display='none';
+  toast('Meldingen gewist');
+}
+function renderNotifs(){var l=document.getElementById('notifList');if(!notifications.length){l.innerHTML='<div class="empty-state"><div class="empty-state-icon">\uD83D\uDD14</div><div class="empty-state-text">Geen meldingen</div></div>';return}l.innerHTML=notifications.map(function(n){return'<div class="notif-item'+(n.read?' read':'')+'"><div class="notif-item-title">'+n.title+'</div><div class="notif-item-body">'+n.body+'</div><div class="notif-item-time">'+n.time+'</div></div>'}).join('')}
+function playNotifSound(){
+  try{
+    var AudioCtx=window.AudioContext||window.webkitAudioContext;
+    if(!AudioCtx)return;
+    var ctx=new AudioCtx();
+    var osc=ctx.createOscillator();
+    var gain=ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type='sine';
+    osc.frequency.setValueAtTime(880,ctx.currentTime);
+    osc.frequency.setValueAtTime(1320,ctx.currentTime+0.1);
+    gain.gain.setValueAtTime(0.15,ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.4);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime+0.4);
+  }catch(e){}
+}
+function addNotif(title,body){notifications.unshift({id:++notifId,title:title,body:body,time:'Zojuist',read:false});updateNotifDot();playNotifSound();}
+function playChatSound(){
+  try{
+    var AudioCtx=window.AudioContext||window.webkitAudioContext;
+    if(!AudioCtx)return;
+    var ctx=new AudioCtx();
+    var osc=ctx.createOscillator();
+    var gain=ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type='sine';
+    osc.frequency.setValueAtTime(660,ctx.currentTime);
+    gain.gain.setValueAtTime(0.1,ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.25);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime+0.25);
+  }catch(e){}
+}
+updateNotifDot();
+
+// ── PERMS ──
+function togglePerm(id){var el=document.getElementById(id);el.classList.toggle('on');perms[id]=el.classList.contains('on');saveAll()}
+function initPerms(){Object.keys(perms).forEach(function(k){var el=document.getElementById(k);if(el){if(perms[k])el.classList.add('on');else el.classList.remove('on')}})}
+
+// ── MEMBERS ──
+function renderMemberStrip(){
+  var s=document.getElementById('memberStrip');
+  var h='<div class="member-pill'+(activeMember===null?' active':'')+'" onclick="setActiveMember(null)"><div class="member-avatar" style="background:rgba(255,255,255,.3);color:white">\uD83C\uDFE0</div>Iedereen</div>';
+  h+=members.map(function(m){return'<div class="member-pill'+(activeMember===m.id?' active':'')+'" onclick="setActiveMember('+m.id+')"><div class="member-avatar" style="background:'+m.color+'44;color:'+m.color+'">'+m.name.charAt(0)+'</div>'+m.name+'<span class="pts-chip">\uD83C\uDFC6'+(m.points||0)+'</span></div>'}).join('');
+  h+='<div class="member-pill" onclick="openMemberModal()" style="border:2px dashed rgba(255,255,255,.4)">+ Beheren</div>';
+  s.innerHTML=h;
+  renderEvtWhoSelect();renderTaskAssignSelects();renderChatAsSelect();
+}
+function setActiveMember(id){activeMember=id;renderMemberStrip();renderGroceries();renderTasks();renderEvents();updateHistoryResetBtn();}
+function openMemberModal(){
+  // Require parent authentication if current user is not a parent
+  var isOuder=currentUser&&getMember(currentUser)&&getMember(currentUser).role==='Ouder';
+  if(!isOuder){
+    requestParentPin(function(){actuallyOpenMemberModal();});
+    return;
+  }
+  actuallyOpenMemberModal();
+}
+function actuallyOpenMemberModal(){
+  initPerms();
+  renderMemberCards();
+  var ps=document.getElementById('permSection');
+  if(ps)ps.style.display=members.some(function(m){return m.role==='Kind';})?'block':'none';
+  var mm=document.getElementById('memberModal');
+  if(mm)mm.style.display='flex';
+}
+var parentPinCallback=null;
+function requestParentPin(callback){
+  parentPinCallback=callback;
+  var t=document.getElementById('pinModalTitle');
+  var s=document.getElementById('pinModalSubtitle');
+  var i=document.getElementById('pinModalInput');
+  var e=document.getElementById('pinModalError');
+  if(t)t.textContent='Ouder PIN vereist';
+  if(s)s.textContent='Alleen ouders kunnen instellingen wijzigen';
+  if(i)i.value='';
+  if(e)e.textContent='';
+  var mm=document.getElementById('pinModal');
+  if(mm)mm.style.display='flex';
+  // Change save button behavior temporarily
+  pinChangeMid='__parentcheck__';
+  setTimeout(function(){if(i)i.focus();},100);
+}
+function closeMemberModal(){
+  var mm=document.getElementById('memberModal');
+  if(mm)mm.style.display='none';
+}
+function renderMemberCards(){
+  var list=document.getElementById('memberList');
+  if(!list)return;
+  var isCurrentOuder=currentUser&&getMember(currentUser)&&getMember(currentUser).role==='Ouder';
+  if(!perms.pins)perms.pins={};
+  list.innerHTML=members.map(function(m){
+    var pin=perms.pins[m.id]||'';
+    var pinDisplay=isCurrentOuder?(pin?pin:'geen'):(pin?'****':'geen');
+    return '<div style="background:#F0F4F9;border-radius:12px;padding:12px 14px;margin-bottom:8px">'
+      +'<div style="display:flex;align-items:center;gap:10px">'
+        +'<div style="width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;background:'+m.color+'33;color:'+m.color+'">'+m.name.charAt(0)+'</div>'
+        +'<div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:800">'+m.name+'</div><div style="font-size:11px;color:#999">'+m.role+' - PIN: '+pinDisplay+'</div></div>'
+        +'<div style="font-size:13px;font-weight:800;color:#F5A623;white-space:nowrap">'+(m.points||0)+' pt</div>'
+        +'<button data-mid="'+m.id+'" data-action="del" style="background:none;border:none;color:#aaa;font-size:22px;cursor:pointer;padding:4px 8px;line-height:1;min-width:36px;min-height:36px">x</button>'
+      +'</div>'
+      +(isCurrentOuder?'<div style="margin-top:8px"><button data-mid="'+m.id+'" data-action="resetpin" style="width:100%;background:#FEF5E7;border:1px solid #F5A623;color:#C47A00;border-radius:8px;padding:7px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:sans-serif">PIN wijzigen</button></div>':'')
+    +'</div>';
+  }).join('');
+  list.onclick=function(e){
+    var btn=e.target;
+    while(btn&&btn!==list){
+      if(btn.getAttribute&&btn.getAttribute('data-action')!==null)break;
+      btn=btn.parentNode;
+    }
+    if(!btn||btn===list)return;
+    var mid=parseInt(btn.getAttribute('data-mid'));
+    var action=btn.getAttribute('data-action');
+    if(action==='del')deleteMember(mid);
+    else if(action==='resetpin')resetMemberPin(mid);
+  };
+}
+var pinChangeMid=null;
+function resetMemberPin(mid){
+  var m=getMember(mid);
+  if(!m)return;
+  pinChangeMid=mid;
+  var t=document.getElementById('pinModalTitle');
+  var s=document.getElementById('pinModalSubtitle');
+  var i=document.getElementById('pinModalInput');
+  var e=document.getElementById('pinModalError');
+  if(t)t.textContent='PIN wijzigen';
+  if(s)s.textContent='Voor '+m.name;
+  if(i)i.value='';
+  if(e)e.textContent='';
+  var mm=document.getElementById('pinModal');
+  if(mm)mm.style.display='flex';
+  setTimeout(function(){if(i)i.focus();},100);
+}
+function closePinModal(){
+  var mm=document.getElementById('pinModal');
+  if(mm)mm.style.display='none';
+  pinChangeMid=null;
+}
+function savePinModal(){
+  var i=document.getElementById('pinModalInput');
+  var e=document.getElementById('pinModalError');
+  if(!i||!pinChangeMid){closePinModal();return;}
+  var pin=i.value.trim();
+  // Parent PIN verification mode
+  if(pinChangeMid==='__parentcheck__'){
+    if(!perms.pins)perms.pins={};
+    // Check if pin matches ANY parent's PIN
+    var isValid=members.some(function(m){
+      return m.role==='Ouder'&&perms.pins[m.id]===pin;
+    });
+    if(!isValid){if(e)e.textContent='Onjuiste ouder-PIN';return;}
+    closePinModal();
+    if(parentPinCallback){var cb=parentPinCallback;parentPinCallback=null;cb();}
+    return;
+  }
+  // Normal PIN change mode
+  if(!/^[0-9]{4,}$/.test(pin)){if(e)e.textContent='Minimaal 4 cijfers';return;}
+  if(!perms.pins)perms.pins={};
+  perms.pins[pinChangeMid]=pin;
+  var m=getMember(pinChangeMid);
+  saveAll();
+  renderMemberCards();
+  closePinModal();
+  toast('PIN voor '+(m?m.name:'')+' bijgewerkt');
+}
+function addMember(){var name=document.getElementById('newMemberName').value.trim();var role=document.getElementById('newMemberRole').value;if(!name)return;var id=++memberId;members.push({id:id,name:name,color:COLORS[id%COLORS.length],role:role,points:0});document.getElementById('newMemberName').value='';renderMemberCards();renderMemberStrip();renderPointsOverview();saveAll();toast(name+' toegevoegd \uD83D\uDC64')}
+function deleteMember(id){
+  var isOuder=currentUser&&getMember(currentUser)&&getMember(currentUser).role==='Ouder';
+  if(!isOuder){requestParentPin(function(){doDeleteMember(id);});return;}
+  doDeleteMember(id);
+}
+function doDeleteMember(id){members=members.filter(function(m){return m.id!==id});if(activeMember===id)activeMember=null;renderMemberCards();renderMemberStrip();saveAll()}
+renderMemberStrip();
+
+// ── GROCERIES ──
+function getAvailShops(){var s=new Set(groceries.filter(function(g){return !g.done}).map(function(g){return g.shop}));var sarr=[];s.forEach(function(v){sarr.push(v)});return['Alle winkels'].concat(sarr)}
+function renderShopTabs(){document.getElementById('shopTabs').innerHTML=getAvailShops().map(function(s){var n=s==='Alle winkels'?groceries.filter(function(g){return !g.done}).length:groceries.filter(function(g){return !g.done&&g.shop===s}).length;return'<div class="filter-pill'+(activeShop===s?' active':'')+'" onclick="setShop('+JSON.stringify(s)+')">'+(s==='Alle winkels'?'\uD83D\uDED2 ':'')+s+'<span class="pill-count">'+n+'</span></div>'}).join('')}
+function setShop(s){activeShop=s;renderShopTabs();renderGroceries()}
+function renderGroceries(){
+  renderShopTabs();
+  var all=groceries;
+  var done=all.filter(function(g){return g.done}).length;
+  var pct=all.length>0?Math.round(done/all.length*100):0;
+  document.getElementById('groceryProgressBar').style.width=pct+'%';
+  var items=all;
+  if(activeMember!==null)items=items.filter(function(g){return g.assignedTo===activeMember||g.assignedTo===null});
+  if(activeShop!=='Alle winkels')items=items.filter(function(g){return g.shop===activeShop});
+  document.getElementById('groceryCount').textContent=all.filter(function(g){return !g.done}).length;
+  var undone=items.filter(function(g){return !g.done}),doneItems=items.filter(function(g){return g.done});
+  if(!items.length){document.getElementById('groceryList').innerHTML='<div class="empty-state"><div class="empty-state-icon">\uD83D\uDED2</div><div class="empty-state-text">Geen artikelen hier</div></div>';return}
+  var cats={};undone.forEach(function(g){if(!cats[g.cat])cats[g.cat]=[];cats[g.cat].push(g)});
+  var html='';
+  Object.keys(cats).forEach(function(cat){var gs=cats[cat];html+='<div class="cat-header"><span class="cat-header-name">'+cat+'</span><span class="cat-header-count">'+gs.length+'</span></div>'+gs.map(gCard).join('')});
+  if(doneItems.length)html+='<div class="cat-header" style="margin-top:12px"><span class="cat-header-name">\u2713 In mandje</span><span class="cat-header-count">'+doneItems.length+'</span></div>'+doneItems.map(gCard).join('');
+  document.getElementById('groceryList').innerHTML=html;
+  var undoneCount=all.filter(function(g){return !g.done}).length;
+  var gb=document.getElementById('grocBadge');if(gb){gb.textContent=undoneCount;}
+}
+function gCard(g){var m=getMember(g.assignedTo);var shops=['Albert Heijn','Lidl','Jumbo','Aldi','Plus','Markt/Overig'];var opts=shops.map(function(s){return'<option value="'+s+'"'+(g.shop===s?' selected':'')+'>'+s+'</option>'}).join('');return'<div class="card grocery-item'+(g.done?' done':'')+'"><label><input type="checkbox" '+(g.done?'checked':'')+' onchange="toggleGrocery('+g.id+')"><span>'+g.name+'</span></label><select class="shop-sel" onchange="changeShop('+g.id+',this.value)">'+opts+'</select><div class="qty-wrap"><button class="qty-btn" onclick="changeQty('+g.id+',-1)">\u2212</button><span class="qty-val">'+g.qty+'</span><button class="qty-btn" onclick="changeQty('+g.id+',1)">+</button></div><button class="assign-btn" onclick="cycleAssign('+g.id+')" style="background:'+(m?m.color+'33':'#eee')+';color:'+(m?m.color:'#999')+'">'+(m?m.name.charAt(0):'?')+'</button><button class="del-btn" onclick="deleteGrocery('+g.id+')">\xd7</button></div>'}
+function addGrocery(){var name=document.getElementById('groceryInput').value.trim();var cat=document.getElementById('groceryCat').value;var shop=document.getElementById('groceryShop').value;if(!name)return;groceries.push({id:++groceryId,name:name,qty:1,done:false,cat:cat,shop:shop,assignedTo:activeMember});document.getElementById('groceryInput').value='';renderGroceries();saveAll();toast(name+' toegevoegd \u2713')}
+function toggleGrocery(id){var g=groceries.find(function(x){return x.id===id});if(g)g.done=!g.done;renderGroceries();saveAll()}
+function changeQty(id,d){var g=groceries.find(function(x){return x.id===id});if(g)g.qty=Math.max(1,g.qty+d);renderGroceries();saveAll()}
+function deleteGrocery(id){groceries=groceries.filter(function(x){return x.id!==id});renderGroceries();saveAll()}
+function clearDone(){groceries=groceries.filter(function(x){return !x.done});renderGroceries();saveAll();toast('Klare artikelen gewist \u2713')}
+function cycleAssign(id){var g=groceries.find(function(x){return x.id===id});if(!g)return;var opts=[null].concat(members.map(function(m){return m.id}));g.assignedTo=opts[(opts.indexOf(g.assignedTo)+1)%opts.length];renderGroceries();saveAll();var m=getMember(g.assignedTo);toast(m?g.name+' \u2192 '+m.name:g.name+' \u2192 Iedereen')}
+function changeShop(id,shop){var g=groceries.find(function(x){return x.id===id});if(!g)return;g.shop=shop;renderGroceries();saveAll();toast(g.name+' \u2192 '+shop)}
+renderGroceries();
+
+// ── TASKS ──
+function renderTaskAssignSelects(){['taskAssign','taskAssign2'].forEach(function(sid){var s=document.getElementById(sid);if(!s)return;var label=sid==='taskAssign'?'Iedereen':'Extra persoon (optioneel)';s.innerHTML='<option value="">'+label+'</option>'+members.map(function(m){return'<option value="'+m.id+'">'+m.name+'</option>'}).join('')})}
+function renderTaskFilterTabs(){var filters=['Alle','Open','Klaar','Goedkeuring'];document.getElementById('taskFilterTabs').innerHTML=filters.map(function(f){var n=f==='Alle'?tasks.filter(function(t){return !t.done}).length:f==='Open'?tasks.filter(function(t){return !t.done&&!t.pending}).length:f==='Klaar'?tasks.filter(function(t){return t.done}).length:tasks.filter(function(t){return t.pending}).length;return'<div class="filter-pill'+(activeTaskFilter===f?' active':'')+'" onclick="setTaskFilter(\''+f+'\')">'+f+'<span class="pill-count">'+n+'</span></div>'}).join('')}
+function setTaskFilter(f){activeTaskFilter=f;renderTaskFilterTabs();renderTasks()}
+function renderTasks(){
+  renderTaskFilterTabs();
+  var items=tasks;
+  if(activeMember!==null)items=items.filter(function(t){return t.assignedTo.indexOf(null)>-1||t.assignedTo.indexOf(activeMember)>-1});
+  if(activeTaskFilter==='Open')items=items.filter(function(t){return !t.done&&!t.pending});
+  else if(activeTaskFilter==='Klaar')items=items.filter(function(t){return t.done});
+  else if(activeTaskFilter==='Goedkeuring')items=items.filter(function(t){return t.pending});
+  else items=items.filter(function(t){return !t.done});
+  var openCount=tasks.filter(function(t){return !t.done}).length;
+  document.getElementById('taskCount').textContent=openCount;
+  var tb=document.getElementById('taskBadge');if(tb){tb.textContent=openCount;}
+  if(!items.length){document.getElementById('taskList').innerHTML='<div class="empty-state"><div class="empty-state-icon">\u2705</div><div class="empty-state-text">Geen taken hier</div></div>';return}
+  document.getElementById('taskList').innerHTML=items.map(taskCard).join('');
+}
+function taskCard(t){
+  var assignees=t.assignedTo.filter(function(id){return id!==null});
+  var assigneeHtml=assignees.length?assignees.map(function(id){var m=getMember(id);return m?'<span class="chip chip-blue">'+m.name+'</span>':''}).join(''):'<span class="chip chip-muted">Iedereen</span>';
+  var overdue=isOverdue(t.deadline);
+  var chipHtml='';
+  if(t.points)chipHtml+='<span class="chip chip-orange">\uD83C\uDFC6 '+t.points+'pt</span>';
+  if(t.recur!=='none')chipHtml+='<span class="chip chip-blue">\uD83D\uDD01 '+{daily:'Dagelijks',weekly:'Wekelijks',monthly:'Maandelijks',rotate:'Roterend'}[t.recur]+'</span>';
+  if(t.room)chipHtml+='<span class="chip chip-muted">'+t.room+'</span>';
+  if(t.deadline)chipHtml+='<span class="chip '+(overdue?'chip-pink':'chip-muted')+'">'+(overdue?'\u26A0\uFE0F ':'\uD83D\uDCC5 ')+t.deadline+'</span>';
+  if(t.penalty)chipHtml+='<span class="chip chip-pink">Boete: -'+t.penalty+'pt</span>';
+  chipHtml+=assigneeHtml;
+  var pendingHtml=t.pending?'<div class="task-pending">\u231B Wacht op goedkeuring ouder'+(activeMember&&getMember(activeMember)&&getMember(activeMember).role==='Ouder'?'<button class="approve-btn" onclick="approveTask('+t.id+')">Goedkeuren \u2713</button>':'')+'</div>':'';
+  var nudgeHtml=!t.done&&!t.pending&&assignees.length?'<button class="nudge-btn" onclick="nudgeTask('+t.id+')">Herinner</button>':'';
+  return'<div class="card task-item'+(t.done?' done-task':'')+'"><input type="checkbox" class="task-check" '+(t.done?'checked':'')+' onchange="toggleTask('+t.id+')"><div class="task-body"><div style="display:flex;align-items:center;gap:6px"><span class="task-name">'+t.name+'</span>'+nudgeHtml+'</div><div class="task-chips">'+chipHtml+'</div>'+pendingHtml+'</div><button class="del-btn" onclick="deleteTask('+t.id+')">\xd7</button></div>'
+}
+function addTask(){
+  var name=document.getElementById('taskName').value.trim();if(!name){toast('Vul een naam in');return}
+  var a1=document.getElementById('taskAssign').value;var a2=document.getElementById('taskAssign2').value;
+  var assignedTo=[];
+  if(a1)assignedTo.push(parseInt(a1));if(a2)assignedTo.push(parseInt(a2));
+  if(!assignedTo.length)assignedTo=[null];
+  var room=document.getElementById('taskRoom').value;
+  var deadline=document.getElementById('taskDeadline').value;
+  var recur=document.getElementById('taskRecur').value;
+  var pts=parseInt(document.getElementById('taskPoints').value)||0;
+  var pen=parseInt(document.getElementById('taskPenalty').value)||0;
+  var approval=document.getElementById('taskApproval').value==='1';
+  tasks.push({id:++taskId,name:name,assignedTo:assignedTo,room:room,deadline:deadline,recur:recur,points:pts,penalty:pen,approval:approval,done:false,pending:false});
+  document.getElementById('taskName').value='';
+  renderTasks();saveAll();toast(name+' toegevoegd \u2713');
+  assignedTo.filter(function(id){return id}).forEach(function(id){var m=getMember(id);if(m)addNotif('Nieuwe taak voor '+m.name,name)});
+}
+function toggleTask(id){
+  var t=tasks.find(function(x){return x.id===id});if(!t)return;
+  if(t.done){t.done=false;t.pending=false;renderTasks();saveAll();return}
+  if(t.approval){
+    var now=new Date(),deadline=t.deadline?new Date(t.deadline):null;
+    if(deadline&&now>deadline&&t.penalty){
+      var firstId=t.assignedTo.find(function(id){return id});
+      var m0=firstId?getMember(firstId):null;
+      if(m0){m0.points=Math.max(0,(m0.points||0)-t.penalty);addNotif('Boete voor '+m0.name,t.name+' te laat: -'+t.penalty+' punten');}
+    }
+    t.pending=true;
+    // Find who completed the task
+    var doer=null;
+    if(activeMember){doer=getMember(activeMember);}
+    else if(t.assignedTo&&t.assignedTo[0]){doer=getMember(t.assignedTo[0]);}
+    var doerName=doer?doer.name:'Iemand';
+    // Notify all parents
+    var ouders=members.filter(function(m){return m.role==='Ouder';});
+    ouders.forEach(function(ouder){
+      addNotif(
+        doerName+' heeft een taak ingeleverd',
+        '"'+t.name+'" wacht op jouw goedkeuring'+(t.points?' (+'+t.points+' pt)':'')
+      );
+    });
+    // Also send chat message
+    var time=new Date().toLocaleTimeString('nl',{hour:'2-digit',minute:'2-digit'});
+    var chatMsg=doerName+' heeft "'+t.name+'" afgerond en wacht op goedkeuring!';
+    chats.push({id:++chatId,from:'system',text:chatMsg,time:time});
+    sv('chats',chats);sv('chatId',chatId);
+    toast(t.name+' ingeleverd - wacht op goedkeuring');
+  } else {completeTask(t);}
+  renderTasks();saveAll();
+}
+function completeTask(t){
+  t.done=true;t.pending=false;
+  if(t.points){
+    var ids=t.assignedTo.filter(function(id){return id});
+    if(!ids.length&&activeMember)ids=[activeMember];
+    ids.forEach(function(id){var m=getMember(id);if(m){m.points=(m.points||0)+t.points;pointsHistory.unshift({who:id,task:t.name,points:t.points,date:todayStr()});if(pointsHistory.length>50)pointsHistory.pop();addNotif('\uD83C\uDFC6 '+m.name+' verdiende '+t.points+' punten',t.name+' voltooid!')}});
+    toast(t.name+' klaar! +'+t.points+' punten \uD83C\uDFC6');
+  } else {toast(t.name+' klaar! \u2705')}
+}
+function approveTask(id){
+  var t=tasks.find(function(x){return x.id===id});if(!t)return;
+  completeTask(t);
+  // Notify the child who did the task
+  var ids=t.assignedTo.filter(function(x){return x;});
+  ids.forEach(function(mid){
+    var m=getMember(mid);
+    if(m){
+      addNotif(
+        'Taak goedgekeurd!',
+        '"'+t.name+'" is goedgekeurd'+(t.points?' +'+t.points+' punten':'')
+      );
+      var time=new Date().toLocaleTimeString('nl',{hour:'2-digit',minute:'2-digit'});
+      chats.push({id:++chatId,from:'system',text:'Gefeliciteerd '+m.name+'! "'+t.name+'" is goedgekeurd'+(t.points?' (+'+t.points+' pt)':'')+'!',time:time});
+      sv('chats',chats);sv('chatId',chatId);
+    }
+  });
+  renderTasks();renderPointsOverview();renderPointsHistory();saveAll();
+}
+function deleteTask(id){tasks=tasks.filter(function(x){return x.id!==id});renderTasks();saveAll()}
+function clearDoneTasks(){tasks=tasks.filter(function(t){return !t.done});renderTasks();saveAll();toast('Voltooide taken gewist')}
+function nudgeTask(id){var t=tasks.find(function(x){return x.id===id});if(!t)return;var ids=t.assignedTo.filter(function(id){return id});ids.forEach(function(mid){var m=getMember(mid);if(m){addNotif('\uD83D\uDCE2 Herinnering voor '+m.name,t.name+' staat nog open!');var chat={id:++chatId,from:'system',text:'\uD83D\uDCE2 '+m.name+', vergeet niet: '+t.name,time:new Date().toLocaleTimeString('nl',{hour:'2-digit',minute:'2-digit'})};chats.push(chat);sv('chats',chats);sv('chatId',chatId);renderChat()}});toast('Herinnering verstuurd \uD83D\uDCE2')}
+renderTasks();
+
+// ── AGENDA ──
+function renderEvtWhoSelect(){var s=document.getElementById('evtWho');if(!s)return;s.innerHTML='<option value="">\uD83D\uDC64 Iedereen</option>'+members.map(function(m){return'<option value="'+m.id+'">'+m.name+'</option>'}).join('')}
+function changeMonth(d){curMonth+=d;if(curMonth>11){curMonth=0;curYear++}if(curMonth<0){curMonth=11;curYear--}renderCalendar()}
+function getExpandedEvents(){
+  var exp=[],end=new Date(curYear,curMonth+3,0);
+  for(var ei=0;ei<events.length;ei++){
+    var e=events[ei];exp.push(e);
+    if(e.recur==='weekly'){var dd=new Date(e.date);for(var i=0;i<26;i++){dd.setDate(dd.getDate()+7);if(dd>end)break;var ne={id:e.id,title:e.title,date:e.date,time:e.time,who:e.who,recur:e.recur,isRecurring:true};ne.id=e.id+'-w'+i;ne.date=fmtDate(dd.getFullYear(),dd.getMonth(),dd.getDate());ne.isRecurring=true;exp.push(ne)}}
+    else if(e.recur==='monthly'){var dm=new Date(e.date);for(var j=0;j<12;j++){dm.setMonth(dm.getMonth()+1);if(dm>end)break;var nm={id:e.id,title:e.title,date:e.date,time:e.time,who:e.who,recur:e.recur,isRecurring:true};nm.id=e.id+'-m'+j;nm.date=fmtDate(dm.getFullYear(),dm.getMonth(),dm.getDate());nm.isRecurring=true;exp.push(nm)}}
+  }
+  return exp;
+}
+function renderCalendar(){
+  document.getElementById('monthLabel').textContent=MONTHS[curMonth]+' '+curYear;
+  var exp=getExpandedEvents();
+  var grid=document.getElementById('calGrid');
+  var h=DSHORT.map(function(d){return'<div class="cal-hdr">'+d+'</div>'}).join('');
+  var fd=new Date(curYear,curMonth,1).getDay(),dim=new Date(curYear,curMonth+1,0).getDate(),dip=new Date(curYear,curMonth,0).getDate();
+  for(var pi=fd-1;pi>=0;pi--)h+='<div class="cal-day other">'+(dip-pi)+'</div>';
+  for(var cd=1;cd<=dim;cd++){
+    var ds=fmtDate(curYear,curMonth,cd);
+    var cnt=exp.filter(function(e){return e.date===ds}).length;
+    var iT=cd===today.getDate()&&curMonth===today.getMonth()&&curYear===today.getFullYear();
+    var cls='cal-day'+(iT?' today':'')+(cd===selDay&&!iT?' sel':'');
+    h+='<div class="'+cls+'" onclick="selectDay('+cd+')">'+cd+(cnt?'<span class="cal-count">'+cnt+'</span>':'')+'</div>';
+  }
+  var rem=(fd+dim)%7===0?0:7-(fd+dim)%7;
+  for(var ri=1;ri<=rem;ri++)h+='<div class="cal-day other">'+ri+'</div>';
+  grid.innerHTML=h;renderEvents();
+}
+function selectDay(d){selDay=d;renderCalendar()}
+function renderEvents(){
+  var list=document.getElementById('eventsList'),label=document.getElementById('eventsLabel');
+  var sd=fmtDate(curYear,curMonth,selDay),ts=todayStr();
+  var exp=getExpandedEvents();
+  var day=exp.filter(function(e){return e.date===sd});
+  if(activeMember!==null)day=day.filter(function(e){return !e.who||e.who===activeMember});
+  var up=exp.filter(function(e){return e.date>=ts&&(!activeMember||!e.who||e.who===activeMember)}).sort(function(a,b){return a.date.localeCompare(b.date)||(a.time||'').localeCompare(b.time||'')}).slice(0,6);
+  var show=day.length>0?day:up;
+  label.textContent=day.length>0?(selDay+' '+MONTHS[curMonth]):'Aankomende afspraken';
+  if(!show.length){list.innerHTML='<div class="empty-state"><div class="empty-state-icon">\uD83D\uDCC5</div><div class="empty-state-text">Geen afspraken. Voeg er een toe!</div></div>';return}
+  list.innerHTML=show.map(function(e){
+    var m=getMember(e.who);
+    var oid=parseInt(String(e.id).split('-')[0]);
+    var delBtn='';
+    if(!e.isRecurring){
+      delBtn='<button data-eid="'+oid+'" data-action="del" class="del-btn">x</button>';
+    } else {
+      delBtn='<button data-eid="'+oid+'" data-action="delSeries" style="background:#FEF5E7;border:1px solid #F5A623;border-radius:8px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;color:#C47A00">Reeks wissen</button>';
+    }
+    return '<div class="card evt-card">'
+      +'<div class="evt-time">'+(e.time||'-')+'</div>'
+      +'<div class="evt-info">'
+        +'<div class="evt-title">'+e.title+(e.recur!=='none'?' (herh.)':'')+'</div>'
+        +'<div class="evt-meta">'+(m?m.name:'Iedereen')+(e.recur==='weekly'?' - Wekelijks':'')+(e.recur==='monthly'?' - Maandelijks':'')+'</div>'
+      +'</div>'
+      +delBtn
+      +'</div>';
+  }).join('');
+  list.onclick=function(ev){
+    var btn=ev.target;
+    while(btn&&btn!==list){
+      if(btn.getAttribute&&btn.getAttribute('data-action')!==null)break;
+      btn=btn.parentNode;
+    }
+    if(!btn||btn===list)return;
+    var eid=parseInt(btn.getAttribute('data-eid'));
+    var action=btn.getAttribute('data-action');
+    if(action==='del')deleteEvent(eid);
+    else if(action==='delSeries')deleteEventSeries(eid);
+  };
+}
+function addEvent(){
+  var title=document.getElementById('evtTitle').value.trim(),date=document.getElementById('evtDate').value,time=document.getElementById('evtTime').value;
+  var whoVal=document.getElementById('evtWho').value;var who=whoVal?parseInt(whoVal):null;
+  var recur=document.getElementById('evtRecur').value;
+  if(!title||!date){toast('Vul omschrijving en datum in');return}
+  events.push({id:++evtId,title:title,date:date,time:time,who:who,recur:recur});
+  document.getElementById('evtTitle').value='';document.getElementById('evtDate').value='';document.getElementById('evtTime').value='';
+  renderCalendar();saveAll();toast(title+' toegevoegd \u2713');var m=getMember(who);addNotif('Nieuwe afspraak',title+(m?' voor '+m.name:''));
+}
+function deleteEvent(id){events=events.filter(function(e){return e.id!==id});renderCalendar();saveAll();toast('Afspraak verwijderd')}
+function deleteEventSeries(id){events=events.filter(function(e){return e.id!==id});renderCalendar();saveAll();toast('Reeks verwijderd')}
+document.getElementById('evtDate').value=todayStr();
+renderCalendar();
+
+// ── LAMPEN ──
+
+
+
+
+
+
+
+
+
+
+
+
+// ── RECEPTEN ──
+function getRecipeCats(){var seen={},cats=[];recipes.forEach(function(r){if(!seen[r.cat]){seen[r.cat]=1;cats.push(r.cat)}});return['Alle'].concat(cats)}
+function renderRecipeCatTabs(){document.getElementById('recipeCatTabs').innerHTML=getRecipeCats().map(function(c){return'<div class="filter-pill'+(activeRecipeCat===c?' active':'')+'" onclick="setRecipeCat(\''+c+'\')">'+c+'<span class="pill-count">'+(c==='Alle'?recipes.length:recipes.filter(function(r){return r.cat===c}).length)+'</span></div>'}).join('')}
+function setRecipeCat(c){activeRecipeCat=c;renderRecipeCatTabs();renderRecipeGrid()}
+function renderRecipeGrid(){var list=activeRecipeCat==='Alle'?recipes:recipes.filter(function(r){return r.cat===activeRecipeCat});if(!list.length){document.getElementById('recipeGrid').innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">\uD83C\uDF73</div><div class="empty-state-text">Geen recepten</div></div>';return}document.getElementById('recipeGrid').innerHTML=list.map(function(r){return'<div class="recipe-card" onclick="openRecipe('+r.id+')"><div class="recipe-thumb">'+r.emoji+'</div><div class="recipe-body"><div class="recipe-name">'+r.name+'</div><div class="recipe-meta"><span>\u23f1 '+r.time+'min</span><span>\uD83D\uDC65 '+r.persons+'p.</span><span class="chip chip-blue" style="font-size:9px">'+r.cat+'</span></div></div></div>'}).join('')}
+function openRecipe(id){var r=recipes.find(function(x){return x.id===id});if(!r)return;curRecipeId=id;checkedIngredients={};curPortions=r.persons;renderRecipeDetail(r);document.getElementById('recepten-overzicht').style.display='none';document.getElementById('recepten-detail').style.display='block';document.getElementById('recepten-nieuw').style.display='none'}
+function renderRecipeDetail(r){
+  var ratio=curPortions/r.persons;
+  var stepsHtml=r.steps?'<div style="font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:12px 0 8px">Bereidingswijze</div><div class="steps-list">'+r.steps.split('.').filter(function(s){return s.trim()}).map(function(s,i){return'<div class="step-row"><div class="step-num">'+(i+1)+'</div><div class="step-text">'+s.trim()+'.</div></div>'}).join('')+'</div>':'';
+  document.getElementById('recipeDetailCard').innerHTML='<div class="recipe-detail-header"><div class="recipe-emoji-big">'+r.emoji+'</div><div class="recipe-detail-info"><div class="recipe-detail-name">'+r.name+'</div><div class="recipe-detail-meta"><span>\u23f1 '+r.time+' min</span><span class="chip chip-blue" style="font-size:9px">'+r.cat+'</span></div></div><button class="back-btn" onclick="closeRecipe()">\u2190</button></div><div class="portions-row"><span class="portions-lbl">\uD83D\uDC65 Porties</span><button class="qty-btn" onclick="changePortions(-1)">\u2212</button><span class="portions-val" id="portionsVal">'+curPortions+'</span><button class="qty-btn" onclick="changePortions(1)">+</button></div><div style="font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Ingredi\u00EBnten</div><div class="ing-list">'+r.ingredients.map(function(ing,i){var base=parseFloat(ing.qty)||1;var scaled=ratio!==1&&!isNaN(base)?Math.round(base*ratio*10)/10:null;var qtyStr=scaled?(scaled+ing.qty.replace(/^[\d.]+/,'')):ing.qty;return'<div class="ing-row"><input type="checkbox" class="ing-check" id="ic'+i+'" onchange="toggleIng('+i+',this)"><label class="ing-name" id="il'+i+'" for="ic'+i+'">'+ing.name+'</label><span class="ing-qty">'+qtyStr+'</span></div>'}).join('')+'</div><button class="add-to-cart" onclick="addRecipeToList('+r.id+')">\uD83D\uDED2 Voeg ingredi\u00EBnten toe aan boodschappen</button>'+stepsHtml+'<div style="margin-top:14px;display:flex;gap:8px"><button class="btn btn-sky" onclick="editRecipe('+r.id+')">Bewerken</button><button class="btn btn-ghost" onclick="deleteRecipe('+r.id+')" style="color:var(--pink);border-color:var(--pink)">Verwijderen</button></div>';
+}
+function changePortions(d){var r=recipes.find(function(x){return x.id===curRecipeId});if(!r)return;curPortions=Math.max(1,curPortions+d);renderRecipeDetail(r)}
+function toggleIng(i,el){checkedIngredients[i]=el.checked;var l=document.getElementById('il'+i);if(l)l.classList.toggle('checked',el.checked)}
+function addRecipeToList(id){var r=recipes.find(function(x){return x.id===id});if(!r)return;var ratio=curPortions/r.persons;var count=0;r.ingredients.forEach(function(ing,i){if(!checkedIngredients[i]){var base=parseFloat(ing.qty)||1;groceries.push({id:++groceryId,name:ing.name+' ('+r.name+')',qty:Math.max(1,Math.round(base*ratio)),done:false,cat:ing.cat||'Overig',shop:ing.shop||'Albert Heijn',assignedTo:null});count++}});saveAll();toast(count+' ingredi\u00EBnt'+(count!==1?'en':'')+' toegevoegd \uD83D\uDED2')}
+function closeRecipe(){document.getElementById('recepten-overzicht').style.display='';document.getElementById('recepten-detail').style.display='none';renderRecipeCatTabs();renderRecipeGrid()}
+function deleteRecipe(id){recipes=recipes.filter(function(r){return r.id!==id});sv('recipes',recipes);closeRecipe();toast('Recept verwijderd')}
+
+function editRecipe(id){
+  var r=recipes.find(function(x){return x.id===id;});
+  if(!r)return;
+  // Store that we're editing
+  editingRecipeId=id;
+  newIngredients=r.ingredients.slice();
+  // Fill form fields
+  var fields={nrfName:r.name,nrfEmoji:r.emoji,nrfTime:r.time,nrfPersons:r.persons,nrfSteps:r.steps||''};
+  Object.keys(fields).forEach(function(k){
+    var el=document.getElementById(k);
+    if(el)el.value=fields[k];
+  });
+  // Set category
+  var catEl=document.getElementById('nrfCat');
+  if(catEl)catEl.value=r.cat;
+  renderIngPreview();
+  // Show title as "Bewerken"
+  var lbl=document.getElementById('nrfFormTitle');
+  if(lbl)lbl.textContent='Recept bewerken';
+  // Switch to edit panel
+  var ovEl=document.getElementById('recepten-overzicht');
+  var detEl=document.getElementById('recepten-detail');
+  var nwEl=document.getElementById('recepten-nieuw');
+  if(ovEl)ovEl.style.display='none';
+  if(detEl)detEl.style.display='none';
+  if(nwEl)nwEl.style.display='block';
+}
+var editingRecipeId=null;
+
+function openNewRecipe(){
+  editingRecipeId=null;
+  newIngredients=[];
+  ['nrfName','nrfEmoji','nrfTime','nrfSteps','ingName','ingQty'].forEach(function(x){var el=document.getElementById(x);if(el)el.value='';});
+  var p=document.getElementById('nrfPersons');if(p)p.value='4';
+  var lbl=document.getElementById('nrfFormTitle');if(lbl)lbl.textContent='Nieuw recept';
+  renderIngPreview();
+  var ovEl=document.getElementById('recepten-overzicht');if(ovEl)ovEl.style.display='none';
+  var detEl=document.getElementById('recepten-detail');if(detEl)detEl.style.display='none';
+  var nwEl=document.getElementById('recepten-nieuw');if(nwEl)nwEl.style.display='block';
+}
+function closeNewRecipe(){document.getElementById('recepten-overzicht').style.display='';document.getElementById('recepten-nieuw').style.display='none';renderRecipeCatTabs();renderRecipeGrid()}
+function addIngredientToForm(){var name=document.getElementById('ingName').value.trim();var qty=document.getElementById('ingQty').value.trim();if(!name)return;newIngredients.push({name:name,qty:qty||'naar smaak',cat:'Overig',shop:'Albert Heijn'});document.getElementById('ingName').value='';document.getElementById('ingQty').value='';renderIngPreview();document.getElementById('ingName').focus()}
+function removeIngFromForm(i){newIngredients.splice(i,1);renderIngPreview()}
+function renderIngPreview(){document.getElementById('ingPreview').innerHTML=newIngredients.map(function(ing,i){return'<div class="ing-chip-item" onclick="removeIngFromForm('+i+')">'+ing.name+' '+ing.qty+' \xd7</div>'}).join('')}
+function saveNewRecipe(){
+  var name=document.getElementById('nrfName').value.trim();
+  var emoji=document.getElementById('nrfEmoji').value.trim()||'';
+  var cat=document.getElementById('nrfCat').value;
+  var time=parseInt(document.getElementById('nrfTime').value)||30;
+  var persons=parseInt(document.getElementById('nrfPersons').value)||4;
+  var steps=document.getElementById('nrfSteps').value.trim();
+  if(!name){toast('Geef het recept een naam');return;}
+  if(!newIngredients.length){toast('Voeg minimaal 1 ingrediënt toe');return;}
+  if(editingRecipeId!==null){
+    // Update existing recipe
+    var r=recipes.find(function(x){return x.id===editingRecipeId;});
+    if(r){r.name=name;r.emoji=emoji;r.cat=cat;r.time=time;r.persons=persons;r.ingredients=newIngredients.slice();r.steps=steps;}
+    toast(name+' bijgewerkt');
+    editingRecipeId=null;
+  } else {
+    recipes.push({id:++recipeId,name:name,emoji:emoji,cat:cat,time:time,persons:persons,ingredients:newIngredients.slice(),steps:steps});
+    toast(name+' opgeslagen');
+  }
+  sv('recipes',recipes);sv('rId',recipeId);
+  closeNewRecipe();
+}
+renderRecipeCatTabs();renderRecipeGrid();
+
+function aiImportRecipe(){var input=document.getElementById('aiImportInput').value.trim();if(!input){toast('Beschrijf eerst een gerecht');return}document.getElementById('aiLoading').style.display='flex';document.getElementById('aiImportInput').disabled=true;fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:'Maak een recept voor: '+input+'. Geef ALLEEN een geldig JSON object terug zonder markdown. Velden: name, emoji (1 emoji), cat (kies uit: Pasta/Soep/Vlees/Vegetarisch/Vis/Ontbijt/Salade/Overig), time (getal minuten), persons (getal), ingredients (array van {name,qty,cat,shop}), steps (string zinnen gescheiden door punten).'}]})}).then(function(res){return res.json()}).then(function(data){var raw=(data.content&&data.content[0]&&data.content[0].text)||'';var r=JSON.parse(raw.replace(/```json|```/g,'').trim());r.id=++recipeId;if(!r.ingredients)r.ingredients=[];recipes.push(r);sv('recipes',recipes);sv('rId',recipeId);renderRecipeCatTabs();renderRecipeGrid();document.getElementById('aiImportInput').value='';toast(r.name+' toegevoegd via AI! \uD83E\uDD16')}).catch(function(){toast('Importeren mislukt.')}).then(function(){document.getElementById('aiLoading').style.display='none';document.getElementById('aiImportInput').disabled=false},function(){document.getElementById('aiLoading').style.display='none';document.getElementById('aiImportInput').disabled=false})}
+
+// ── WEEKMENU ──
+function getWeekDays(){var days=[],d=new Date(today);var dow=d.getDay(),diff=d.getDate()-(dow===0?6:dow-1);d.setDate(diff+(weekOffset*7));for(var i=0;i<7;i++){var dd=new Date(d);dd.setDate(d.getDate()+i);days.push(dd);}return days;}
+function changeWeek(dir){weekOffset+=dir;closeMealPicker();renderWeekGrid();}
+function renderWeekGrid(){
+  var days=getWeekDays(),ts=todayStr();
+  var MNTHS=["jan","feb","mrt","apr","mei","jun","jul","aug","sep","okt","nov","dec"];
+  var first=days[0],last=days[6];
+  var label=first.getDate()+" "+MNTHS[first.getMonth()]+" - "+last.getDate()+" "+MNTHS[last.getMonth()];
+  if(weekOffset===0)label="Deze week";
+  else if(weekOffset===1)label="Volgende week";
+  else if(weekOffset===-1)label="Vorige week";
+  var wl=document.getElementById("weekLabel");if(wl)wl.textContent=label;
+  var html=days.map(function(day,i){
+    var ds=fmtDate(day.getFullYear(),day.getMonth(),day.getDate());
+    var isToday=ds===ts;
+    var key="w"+weekOffset+"_"+i;
+    var rId=weekMenu[key];
+    var recipe=rId!=null?recipes.find(function(r){return r.id===rId;}):null;
+    return '<div class="week-day-cell'+(isToday?' today-cell':'')+( recipe?' has-meal':'')+'" data-dayidx="'+i+'" data-dayname="'+DNAMES[day.getDay()]+'">'
+      +'<div class="wk-day-name">'+DSHORT[day.getDay()]+'</div>'
+      +'<div class="wk-day-num">'+day.getDate()+'</div>'
+      +(recipe?'<div class="wk-meal-emoji">'+recipe.emoji+'</div><div class="wk-meal-name">'+recipe.name+'</div>':'<div class="wk-empty">+</div>')
+      +'</div>';
+  }).join("");
+  var grid=document.getElementById("weekGrid");
+  if(grid){
+    grid.innerHTML=html;
+    grid.onclick=function(e){
+      var cell=e.target;
+      while(cell&&cell!==grid){
+        if(cell.getAttribute&&cell.getAttribute("data-dayidx")!==null)break;
+        cell=cell.parentNode;
+      }
+      if(!cell||cell===grid)return;
+      openMealPicker(parseInt(cell.getAttribute("data-dayidx")),cell.getAttribute("data-dayname"));
+    };
+  }
+  var wme=document.getElementById("weekMenuEmpty");
+  if(wme)wme.style.display=Object.keys(weekMenu).length?"none":"block";
+}
+function openMealPicker(dayIndex,dayName){
+  selWeekDay=dayIndex;
+  var dayEl=document.getElementById('mealPickerDay');
+  if(dayEl)dayEl.textContent=dayName;
+  var grid=document.getElementById('mealPickerGrid');
+  if(grid){
+    grid.innerHTML=recipes.map(function(r){
+      return '<div class="meal-pick-card" data-rid="'+r.id+'" style="cursor:pointer">'
+        +'<div class="meal-pick-emoji">'+r.emoji+'</div>'
+        +'<div><div class="meal-pick-name">'+r.name+'</div>'
+        +'<div class="meal-pick-meta">'+r.time+' min</div></div>'
+        +'</div>';
+    }).join('');
+    grid.onclick=function(e){
+      var card=e.target;
+      while(card&&card!==grid){
+        if(card.getAttribute&&card.getAttribute('data-rid')!==null)break;
+        card=card.parentNode;
+      }
+      if(!card||card===grid)return;
+      assignMeal(parseInt(card.getAttribute('data-rid')));
+    };
+  }
+  var mp=document.getElementById('mealPicker');
+  if(mp)mp.style.display='block';
+}
+function closeMealPicker(){document.getElementById('mealPicker').style.display='none';selWeekDay=null}
+function assignMeal(rId){if(selWeekDay===null)return;weekMenu['w'+weekOffset+'_'+selWeekDay]=rId;closeMealPicker();renderWeekGrid();saveAll();var r=recipes.find(function(x){return x.id===rId});toast((r?r.name:'Recept')+' gepland!');}
+function clearWeekMenu(){var prefix='w'+weekOffset+'_';Object.keys(weekMenu).forEach(function(k){if(k.indexOf(prefix)===0)delete weekMenu[k];});renderWeekGrid();saveAll();toast('Week gewist');}
+function addWeekMenuToList(){var count=0;var prefix2='w'+weekOffset+'_';Object.keys(weekMenu).filter(function(k){return k.indexOf(prefix2)===0;}).map(function(k){return weekMenu[k];}).forEach(function(rId){var r=recipes.find(function(x){return x.id===rId});if(!r)return;r.ingredients.forEach(function(ing){groceries.push({id:++groceryId,name:ing.name+' ('+r.name+')',qty:1,done:false,cat:ing.cat||'Overig',shop:ing.shop||'Albert Heijn',assignedTo:null});count++;})});saveAll();renderGroceries();toast(count+' ingredienten naar boodschappen');}
+renderWeekGrid();
+
+// ── BELONINGEN ──
+
+function renderAdjustMember(){
+  var sel=document.getElementById('adjustMember');
+  if(!sel)return;
+  sel.innerHTML=members.map(function(m){
+    return '<option value="'+m.id+'">'+m.name+' ('+(m.points||0)+' pt)</option>';
+  }).join('');
+}
+
+function adjustPoints(direction){
+  var isOuder=currentUser&&getMember(currentUser)&&getMember(currentUser).role==='Ouder';
+  if(!isOuder){requestParentPin(function(){adjustPointsAction(direction);});return;}
+  adjustPointsAction(direction);
+}
+function adjustPointsAction(direction){
+  var sel=document.getElementById('adjustMember');
+  var amtEl=document.getElementById('adjustAmount');
+  var reasonEl=document.getElementById('adjustReason');
+  if(!sel)return;
+  var mid=parseInt(sel.value);
+  var m=getMember(mid);
+  if(!m){toast('Kies een gezinslid');return;}
+  var reason=reasonEl?reasonEl.value.trim():'';
+  if(direction===0){
+    var old=m.points||0;
+    m.points=0;
+    pointsHistory.unshift({who:mid,task:'Punten gereset'+(reason?' ('+reason+')':''),points:-old,date:todayStr()});
+    toast(m.name+' gereset naar 0 punten');
+  } else {
+    var amt=parseInt(amtEl?amtEl.value:0)||0;
+    if(amt<=0){toast('Vul een positief getal in');return;}
+    var change=direction*amt;
+    m.points=Math.max(0,(m.points||0)+change);
+    pointsHistory.unshift({who:mid,task:(direction>0?'Punten toegevoegd':'Punten afgetrokken')+(reason?' ('+reason+')':''),points:change,date:todayStr()});
+    toast(m.name+': '+(direction>0?'+':'')+change+' punten');
+  }
+  if(pointsHistory.length>50)pointsHistory.pop();
+  if(amtEl)amtEl.value='';
+  if(reasonEl)reasonEl.value='';
+  saveAll();
+  renderPointsOverview();
+  renderPointsHistory();
+  renderAdjustMember();
+}
+
+function renderPointsOverview(){document.getElementById('memberPointsGrid').innerHTML=members.map(function(m){var topReward=rewards.slice().sort(function(a,b){return a.cost-b.cost}).find(function(r){return r.cost>(m.points||0)});var pct=topReward?Math.min(100,Math.round(((m.points||0)/topReward.cost)*100)):100;return'<div class="member-pts-card"><div class="member-pts-av" style="background:'+m.color+'44;color:'+m.color+'">'+m.name.charAt(0)+'</div><div class="member-pts-name">'+m.name+'</div><div class="member-pts-val">'+(m.points||0)+'</div><div class="member-pts-lbl">punten</div>'+(topReward?'<div class="goal-bar-wrap"><div class="goal-bar" style="width:'+pct+'%"></div></div><div class="goal-lbl">'+pct+'% naar: '+topReward.name+'</div>':'')+'</div>'}).join('')}
+function renderRewards(){
+  var list=document.getElementById('rewardsList');
+  if(!list)return;
+  if(!rewards.length){
+    list.innerHTML='<div class="empty-state"><div class="empty-state-text">Nog geen beloningen</div></div>';
+    return;
+  }
+  list.innerHTML=rewards.map(function(rw){
+    var memberOpts=members.map(function(m){
+      return '<option value="'+m.id+'">'+m.name+' ('+(m.points||0)+' pt)</option>';
+    }).join('');
+    return '<div class="card reward-card">'
+      +'<div class="reward-icon">'+rw.icon+'</div>'
+      +'<div class="reward-info">'
+        +'<div class="reward-name">'+rw.name+'</div>'
+        +'<div class="reward-cost">'+rw.cost+' punten</div>'
+      +'</div>'
+      +'<div class="reward-actions">'
+        +'<select id="rf-'+rw.id+'" style="font-size:11px;font-weight:700;border:1.5px solid #ddd;border-radius:8px;padding:3px 6px;background:white">'+memberOpts+'</select>'
+        +'<button data-rwid="'+rw.id+'" data-action="redeem" class="redeem-btn">Inwisselen</button>'
+        +'<button data-rwid="'+rw.id+'" data-action="del" style="background:none;border:none;color:#ccc;font-size:22px;cursor:pointer;padding:4px 8px;line-height:1;min-width:36px;min-height:36px">x</button>'
+      +'</div>'
+    +'</div>';
+  }).join('');
+  list.onclick=function(e){
+    var btn=e.target;
+    while(btn&&btn!==list){
+      if(btn.getAttribute&&btn.getAttribute('data-action')!==null)break;
+      btn=btn.parentNode;
+    }
+    if(!btn||btn===list)return;
+    var rwid=parseInt(btn.getAttribute('data-rwid'));
+    var action=btn.getAttribute('data-action');
+    if(action==='del')deleteReward(rwid);
+    else if(action==='redeem')redeemReward(rwid);
+  };
+}
+function resetPointsHistory(){
+  var isOuder=currentUser&&getMember(currentUser)&&getMember(currentUser).role==='Ouder';
+  if(!isOuder){requestParentPin(function(){doResetPointsHistory();});return;}
+  doResetPointsHistory();
+}
+function doResetPointsHistory(){
+  if(!confirm('Weet je zeker dat je de volledige puntengeschiedenis wilt wissen?'))return;
+  pointsHistory=[];
+  saveAll();
+  renderPointsHistory();
+  toast('Puntengeschiedenis gewist');
+}
+function updateHistoryResetBtn(){
+  var btn=document.getElementById('resetHistoryBtn');
+  if(!btn)return;
+  var isOuder=activeMember&&getMember(activeMember)&&getMember(activeMember).role==='Ouder';
+  btn.style.display=isOuder?'block':'none';
+}
+function renderPointsHistory(){
+  var el=document.getElementById('pointsHistory');
+  if(!el)return;
+  if(!pointsHistory.length){el.innerHTML='<div class="empty-state" style="padding:20px"><div class="empty-state-text">Nog geen puntengeschiedenis</div></div>';return;}
+  el.innerHTML=pointsHistory.slice(0,20).map(function(h){var m=getMember(h.who);var isNeg=h.points<0;return'<div class="card history-item"><span style="font-size:20px">'+(isNeg?'-':'+')+'</span><div style="flex:1"><div style="font-size:13px;font-weight:700">'+(m?m.name:'?')+' - '+h.task+'</div><div style="font-size:11px;color:#999">'+h.date+'</div></div><div class="history-pts" style="color:'+(isNeg?'var(--pink)':'var(--orange)')+'">'+( isNeg?h.points:'+'+h.points)+'</div></div>';}).join('');
+}
+function toggleAddReward(){var f=document.getElementById('addRewardForm');f.style.display=f.style.display==='none'?'block':'none'}
+function saveReward(){var name=document.getElementById('rewardName').value.trim();var icon=document.getElementById('rewardIcon').value.trim()||'\uD83C\uDF81';var cost=parseInt(document.getElementById('rewardCost').value)||50;if(!name){toast('Vul een naam in');return}rewards.push({id:++rewardId,icon:icon,name:name,cost:cost});saveAll();renderRewards();document.getElementById('addRewardForm').style.display='none';toast(name+' toegevoegd \uD83C\uDF81')}
+function deleteReward(id){rewards=rewards.filter(function(r){return r.id!==id});saveAll();renderRewards();toast('Beloning verwijderd')}
+function redeemReward(rwId){var rw=rewards.find(function(r){return r.id===rwId});if(!rw)return;var sel=document.getElementById('rf-'+rwId);var mId=parseInt(sel.value);var m=getMember(mId);if(!m){toast('Kies een gezinslid');return}if((m.points||0)<rw.cost){toast(m.name+' heeft niet genoeg punten (\u2715 '+rw.cost+' nodig)');return}m.points-=rw.cost;pointsHistory.unshift({who:mId,task:rw.name+' ingewisseld',points:-rw.cost,date:todayStr()});if(pointsHistory.length>50)pointsHistory.pop();saveAll();renderPointsOverview();renderRewards();renderPointsHistory();renderAdjustMember();toast(m.name+' wisselt in: '+rw.name+' \uD83C\uDF81');addNotif('\uD83C\uDF81 '+m.name+' heeft '+rw.name+' ingewisseld!','Kosten: '+rw.cost+' punten')}
+renderPointsOverview();renderRewards();renderPointsHistory();
+
+// ── CHAT ──
+function renderChatAsSelect(){var s=document.getElementById('chatAs');if(!s)return;s.innerHTML='<option value="">Stuur als\u2026</option>'+members.map(function(m){return'<option value="'+m.id+'">'+m.name+'</option>'}).join('')}
+function renderChat(){var wrap=document.getElementById('chatMessages');if(!wrap)return;var badge=document.getElementById('chatBadge');if(badge)badge.style.display='none';wrap.innerHTML=chats.map(function(c){var isSystem=c.from==='system';if(isSystem)return'<div style="text-align:center;font-size:11px;color:var(--muted);font-weight:600;margin:8px 0">'+c.text+'</div>';var m=getMember(c.from);var isMe=c.from===activeMember;return'<div class="'+(isMe?'chat-me':'chat-other')+'" style="display:flex;flex-direction:column;align-items:'+(isMe?'flex-end':'flex-start')+'"><div class="chat-meta">'+(m?m.name:'?')+' \u2022 '+c.time+'</div><div class="chat-bubble '+(isMe?'me':'other')+'">'+c.text+'</div></div>'}).join('');wrap.scrollTop=wrap.scrollHeight}
+function sendChat(){var input=document.getElementById('chatInput');var fromSel=document.getElementById('chatAs');var text=input.value.trim();var fromId=fromSel?parseInt(fromSel.value):null;if(!text){toast('Typ een bericht');return}if(!fromId){toast('Kies wie je bent');return}var time=new Date().toLocaleTimeString('nl',{hour:'2-digit',minute:'2-digit'});chats.push({id:++chatId,from:fromId,text:text,time:time});input.value='';sv('chats',chats);sv('chatId',chatId);renderChat();var cb=document.getElementById('chatBadge');if(cb)cb.style.display='block'}
+renderChat();
+
+// ── MORE MENU ──
+function toggleMoreMenu(btn){
+  var menu=document.getElementById('moreMenu');
+  var ov=document.getElementById('moreOverlay');
+  var isOpen=menu.style.display==='block';
+  menu.style.display=isOpen?'none':'block';
+  ov.style.display=isOpen?'none':'block';
+  document.querySelectorAll('.tab-item').forEach(function(b){b.classList.remove('active')});
+  if(!isOpen)btn.classList.add('active');
+}
+function closeMoreMenu(){
+  document.getElementById('moreMenu').style.display='none';
+  document.getElementById('moreOverlay').style.display='none';
+}
+function showTabFromMore(tab){
+  closeMoreMenu();
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active')});
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.querySelectorAll('.tab-item').forEach(function(b){b.classList.remove('active')});
+  document.getElementById('tabBtnMeer').classList.add('active');
+  if(tab==='beloningen'){renderPointsOverview();renderRewards();renderPointsHistory()}
+  else if(tab==='weekmenu'){renderWeekGrid()}
+  else if(tab==='chat'){renderChat()}
+  else if(tab==='recepten'){renderRecipeCatTabs();renderRecipeGrid()}
+}
+
+// ── HUIS DASHBOARD ──
+function renderHuis(){
+  var now=new Date();
+  var h=now.getHours();
+  var gr=h<12?'Goedemorgen ':h<18?'Goedemiddag ':'Goedenavond ';
+  var grEl=document.getElementById('huisGreeting');if(grEl)grEl.textContent=gr;
+  var dEl=document.getElementById('huisDate');
+  if(dEl)dEl.textContent=(['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'][now.getDay()]+' '+now.getDate()+' '+['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'][now.getMonth()]);
+  var openTasks=tasks.filter(function(t){return !t.done});
+  var tc=document.getElementById('huisTaskCount');if(tc)tc.textContent=openTasks.length+' open '+(openTasks.length===1?'taak':'taken');
+  var openGroc=groceries.filter(function(g){return !g.done});
+  var gc=document.getElementById('huisGrocCount');if(gc)gc.textContent=openGroc.length+' '+(openGroc.length===1?'artikel':'artikelen');
+  var tl=document.getElementById('huisTaskList');
+  if(tl){
+    var td=tasks.filter(function(t){return !t.done}).slice(0,3);
+    if(!td.length){tl.innerHTML='<div style="color:var(--muted);font-size:13px;font-weight:600;padding:8px 0">Niets te doen vandaag!</div>'}
+    else{tl.innerHTML=td.map(function(t){
+      var m=t.assignedTo[0]?getMember(t.assignedTo[0]):null;
+      return '<div style="background:white;border-radius:12px;padding:11px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 6px rgba(60,90,150,.07)">'
+        +'<input type="checkbox" onchange="toggleTask('+t.id+');renderHuis()" style="width:19px;height:19px;accent-color:var(--orange);cursor:pointer;flex-shrink:0">'
+        +'<div style="flex:1"><div style="font-size:13px;font-weight:700">'+t.name+'</div>'+(m?'<div style="font-size:11px;color:var(--muted);font-weight:600">'+m.name+'</div>':'')+'</div>'
+        +(t.points?'<span style="background:var(--orange-light);color:var(--orange);border-radius:8px;padding:2px 7px;font-size:10px;font-weight:800">+'+t.points+'pt</span>':'')
+        +'</div>';
+    }).join('')}
+  }
+  var ts=fmtDate(now.getFullYear(),now.getMonth(),now.getDate());
+  var exp=getExpandedEvents();
+  var todayEvts=exp.filter(function(e){return e.date===ts}).slice(0,3);
+  var ec=document.getElementById('huisEvtCount');if(ec)ec.textContent=todayEvts.length+(todayEvts.length===1?' afspraak vandaag':' afspraken vandaag');
+  var el2=document.getElementById('huisEvtList');
+  if(el2){
+    if(!todayEvts.length){el2.innerHTML='<div style="color:var(--muted);font-size:13px;font-weight:600;padding:8px 0">Geen afspraken vandaag</div>'}
+    else{el2.innerHTML=todayEvts.map(function(e){
+      var m=getMember(e.who);
+      return '<div style="background:white;border-radius:12px;padding:11px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 6px rgba(60,90,150,.07);border-left:4px solid var(--blue)">'
+        +'<div style="font-size:12px;font-weight:700;color:var(--muted);min-width:36px">'+(e.time||'--')+'</div>'
+        +'<div style="flex:1"><div style="font-size:13px;font-weight:700">'+e.title+'</div>'+(m?'<div style="font-size:11px;color:var(--muted);font-weight:600">'+m.name+'</div>':'')+'</div>'
+        +'</div>';
+    }).join('')}
+  }
+  var topM=members.slice().sort(function(a,b){return (b.points||0)-(a.points||0)})[0];
+  if(topM){var hp=document.getElementById('huisTopPts');if(hp)hp.textContent=topM.name+' leidt met '+(topM.points||0)+' pt'}
+  var pl=document.getElementById('huisPtsList');
+  if(pl){pl.innerHTML=members.map(function(m){
+    return '<div style="background:white;border-radius:12px;padding:12px 14px;text-align:center;min-width:80px;box-shadow:0 1px 6px rgba(60,90,150,.07);flex-shrink:0">'
+      +'<div style="width:32px;height:32px;border-radius:50%;background:'+m.color+'33;color:'+m.color+';font-size:14px;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 6px">'+m.name.charAt(0)+'</div>'
+      +'<div style="font-size:11px;font-weight:700;color:var(--ink2);margin-bottom:2px">'+m.name+'</div>'
+      +'<div style="font-size:17px;font-weight:900;color:var(--orange)">'+(m.points||0)+'</div>'
+      +'<div style="font-size:9px;color:var(--muted);font-weight:700">punten</div>'
+      +'</div>';
+  }).join('')}
+}
+
+// Start op Huis tab
+var hb=document.getElementById('tabBtnHuis');if(hb)hb.style.color='#6A9FD4';
+// Show login screen immediately
+var loginScreen=document.getElementById('loginScreen');
+if(loginScreen)loginScreen.style.display='flex';
+var subtitleInit=document.getElementById('loginSubtitle');
+if(subtitleInit)subtitleInit.textContent='Verbinden met server...';
+
+// AGGRESSIVE SYNC: try to get data from Supabase, only proceed after we have it
+function attemptSync(retries){
+  retries=retries||0;
+  var sub=document.getElementById('loginSubtitle');
+  if(sub)sub.textContent='Ophalen van gegevens... ('+(retries+1)+')';
+  sbLoad(function(){
+    // Check if we actually got members from server
+    if(members&&members.length>0){
+      if(sub)sub.textContent='Klaar!';
+      setTimeout(function(){
+        renderHuis();
+        if(!checkAutoLogin()){
+          initLogin();
+        }
+      },100);
+    } else if(retries<3){
+      // Retry - server might be slow
+      setTimeout(function(){attemptSync(retries+1);},1000);
+    } else {
+      // Give up, use whatever we have
+      if(sub)sub.textContent='Kies je profiel';
+      renderHuis();
+      if(!checkAutoLogin()){
+        initLogin();
+      }
+    }
+  });
+}
+setTimeout(function(){attemptSync(0);},300);
+
+// Syntax check passed - all done
+
+
+function toggleMoreMenu(btn){
+  var menu=document.getElementById('moreMenu');
+  var ov=document.getElementById('moreOverlay');
+  if(!menu||!ov)return;
+  var isOpen=menu.style.display==='block';
+  menu.style.display=isOpen?'none':'block';
+  ov.style.display=isOpen?'none':'block';
+  ['tabBtnHuis','tabBtnBoodschappen','tabBtnTaken','tabBtnAgenda','tabBtnMeer'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.style.color='#999';
+  });
+  if(!isOpen&&btn)btn.style.color='#6A9FD4';
+}
+function closeMoreMenu(){
+  var menu=document.getElementById('moreMenu');var ov=document.getElementById('moreOverlay');
+  if(menu)menu.style.display='none';
+  if(ov)ov.style.display='none';
+}
+function showTabFromMore(tab){
+  closeMoreMenu();
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
+  var panel=document.getElementById('tab-'+tab);if(panel)panel.classList.add('active');
+  ['tabBtnHuis','tabBtnBoodschappen','tabBtnTaken','tabBtnAgenda','tabBtnMeer'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.style.color='#999';
+  });
+  var meer=document.getElementById('tabBtnMeer');if(meer)meer.style.color='#6A9FD4';
+  if(tab==='beloningen'){renderPointsOverview();renderRewards();renderPointsHistory();renderAdjustMember();}
+  else if(tab==='weekmenu'){renderWeekGrid();}
+  else if(tab==='chat'){renderChat();}
+  else if(tab==='recepten'){renderRecipeCatTabs();renderRecipeGrid();}
+}
+
+
+
+</script>
+</body>
+</html>
