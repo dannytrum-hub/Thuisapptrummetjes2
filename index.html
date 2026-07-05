@@ -724,14 +724,23 @@ function forceHardReload(){
 // ── AUTO VERSION CHECK ──
 var APP_VERSION='1783263443';
 function checkAppVersion(){
-  // Fetch the current HTML from server with cache-buster
+  // Skip check if user is typing in an input field
+  var active=document.activeElement;
+  if(active&&(active.tagName==='INPUT'||active.tagName==='TEXTAREA'||active.tagName==='SELECT'))return;
+  // Skip check if login PIN modal is being used
+  var loginScreen=document.getElementById('loginScreen');
+  if(loginScreen&&loginScreen.style.display!=='none'){
+    var pinSec=document.getElementById('loginPinSection');
+    if(pinSec&&pinSec.style.display!=='none')return;
+  }
   fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})
     .then(function(r){return r.text();})
     .then(function(html){
       var m=html.match(/name="app-version" content="(\d+)"/);
       if(m&&m[1]!==APP_VERSION){
-        console.log('New version available:',m[1],'current:',APP_VERSION);
-        // Clear caches and reload
+        // Double-check user isn't typing right now
+        var a=document.activeElement;
+        if(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA'))return;
         try{
           if('caches' in window){
             caches.keys().then(function(names){
@@ -739,16 +748,15 @@ function checkAppVersion(){
             });
           }
         }catch(e){}
-        // Force hard reload
         location.reload(true);
       }
     })
     .catch(function(){});
 }
 // Check every 30 seconds
-setInterval(checkAppVersion,30000);
+setInterval(checkAppVersion,300000);
 // Check immediately on load
-setTimeout(checkAppVersion,2000);
+setTimeout(checkAppVersion,10000);
 
 // ── LOGIN SYSTEEM ──
 var currentUser=null;
