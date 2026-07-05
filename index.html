@@ -336,8 +336,8 @@ input[type=range]{width:100%;accent-color:var(--orange);height:4px;cursor:pointe
 <!-- LOGIN SCREEN -->
 <div id="loginScreen" style="position:fixed;inset:0;z-index:9999;background:linear-gradient(180deg,#6A9FD4,#3A6FA8);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;font-family:'Nunito',sans-serif">
   <div style="background:white;border-radius:24px;padding:28px 24px;width:100%;max-width:340px;box-shadow:0 8px 32px rgba(0,0,0,.2)">
-    <button onclick="forceHardReload()" style="width:100%;background:#E8728A;color:white;border:none;border-radius:10px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:sans-serif;margin-bottom:8px">↻ Vernieuw naar nieuwste versie</button>
-    <button onclick="testSupabase()" style="width:100%;background:#6A9FD4;color:white;border:none;border-radius:10px;padding:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:sans-serif;margin-bottom:14px">🔍 Test Supabase verbinding</button>
+    <button onclick="forceHardReload()" style="width:100%;background:#E8728A;color:white;border:none;border-radius:10px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:sans-serif;margin-bottom:8px">â†» Vernieuw naar nieuwste versie</button>
+    <button onclick="testSupabase()" style="width:100%;background:#6A9FD4;color:white;border:none;border-radius:10px;padding:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:sans-serif;margin-bottom:14px">ðŸ” Test Supabase verbinding</button>
     <div id="sbTestResult" style="font-size:11px;color:#555;margin-bottom:12px;text-align:left;background:#f5f5f5;padding:8px;border-radius:6px;display:none;max-height:200px;overflow-y:auto;font-family:monospace;word-break:break-all"></div>
     <div style="text-align:center;margin-bottom:20px">
       <div style="font-size:44px;margin-bottom:4px">HOME</div>
@@ -461,7 +461,7 @@ input[type=range]{width:100%;accent-color:var(--orange);height:4px;cursor:pointe
 <div id="tab-boodschappen" class="panel">
   <div style="margin-bottom:14px">
     <div class="form-row">
-      <input class="f-input" type="text" id="groceryInput" placeholder="Artikel toevoegen…" onkeydown="if(event.key==='Enter')addGrocery()">
+      <input class="f-input" type="text" id="groceryInput" placeholder="Artikel toevoegenâ€¦" onkeydown="if(event.key==='Enter')addGrocery()">
       <select class="f-input" id="groceryCat" style="max-width:110px">
         <option value="Groente">&#129382; Groente</option><option value="Zuivel">&#129472; Zuivel</option>
         <option value="Vlees">&#129385; Vlees</option><option value="Bakkerij">&#127838; Bakkerij</option>
@@ -488,7 +488,7 @@ input[type=range]{width:100%;accent-color:var(--orange);height:4px;cursor:pointe
 <div id="tab-taken" class="panel">
   <div class="task-form">
     <div style="font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px">Taak toevoegen</div>
-    <div class="form-row"><input class="f-input" type="text" id="taskName" placeholder="Taaknaam…"/></div>
+    <div class="form-row"><input class="f-input" type="text" id="taskName" placeholder="Taaknaamâ€¦"/></div>
     <div class="form-row">
       <select class="f-input" id="taskAssign"><option value="">&#128100; Iedereen</option></select>
       <select class="f-input" id="taskAssign2"><option value="">Extra persoon (optioneel)</option></select>
@@ -541,9 +541,9 @@ input[type=range]{width:100%;accent-color:var(--orange);height:4px;cursor:pointe
   <div id="recepten-overzicht">
     <div class="ai-card">
       <div class="ai-title">&#129302; Recept importeren via AI</div>
-      <div class="ai-desc">Beschrijf een gerecht — de app maakt het automatisch aan.</div>
-      <div class="ai-row"><input type="text" id="aiImportInput" placeholder="bv. lasagne voor 4 personen…"/><button class="btn btn-blue" onclick="aiImportRecipe()" style="padding:9px 14px;font-size:12px">Importeer</button></div>
-      <div class="ai-spinner-wrap" id="aiLoading" style="display:none"><div class="spinner"></div>AI bedenkt recept…</div>
+      <div class="ai-desc">Beschrijf een gerecht â€” de app maakt het automatisch aan.</div>
+      <div class="ai-row"><input type="text" id="aiImportInput" placeholder="bv. lasagne voor 4 personenâ€¦"/><button class="btn btn-blue" onclick="aiImportRecipe()" style="padding:9px 14px;font-size:12px">Importeer</button></div>
+      <div class="ai-spinner-wrap" id="aiLoading" style="display:none"><div class="spinner"></div>AI bedenkt receptâ€¦</div>
     </div>
     <div class="section-header"><span class="section-title">Recepten</span><button class="btn btn-green" onclick="openNewRecipe()">+ Nieuw</button></div>
     <div class="filter-row" id="recipeCatTabs"></div>
@@ -553,12 +553,12 @@ input[type=range]{width:100%;accent-color:var(--orange);height:4px;cursor:pointe
   <div id="recepten-nieuw" style="display:none">
     <div class="nrf-card">
       <div class="nrf-title" id="nrfFormTitle">Nieuw recept</div>
-      <div class="form-row"><input class="f-input" type="text" id="nrfName" placeholder="Naam van het recept…"/></div>
+      <div class="form-row"><input class="f-input" type="text" id="nrfName" placeholder="Naam van het receptâ€¦"/></div>
       <div class="form-row"><input class="f-input" type="text" id="nrfEmoji" placeholder="&#127859;" style="max-width:70px"/><select class="f-input" id="nrfCat"><option>Pasta</option><option>Soep</option><option>Vlees</option><option>Vegetarisch</option><option>Vis</option><option>Ontbijt</option><option>Salade</option><option>Overig</option></select></div>
       <div class="form-row"><input class="f-input" type="number" id="nrfTime" placeholder="Tijd (min)"/><input class="f-input" type="number" id="nrfPersons" placeholder="Personen" value="4"/></div>
-      <textarea class="f-input" id="nrfSteps" rows="3" placeholder="Bereidingswijze…" style="resize:vertical;margin-bottom:8px"></textarea>
-      <div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Ingrediënten</div>
-      <div class="ing-add-row"><input type="text" id="ingName" placeholder="Ingrediënt" onkeydown="if(event.key==='Enter')addIngredientToForm()"/><input type="text" id="ingQty" placeholder="Hoev." style="max-width:80px" onkeydown="if(event.key==='Enter')addIngredientToForm()"/><button class="ing-add-btn" onclick="addIngredientToForm()">+</button></div>
+      <textarea class="f-input" id="nrfSteps" rows="3" placeholder="Bereidingswijzeâ€¦" style="resize:vertical;margin-bottom:8px"></textarea>
+      <div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">IngrediÃ«nten</div>
+      <div class="ing-add-row"><input type="text" id="ingName" placeholder="IngrediÃ«nt" onkeydown="if(event.key==='Enter')addIngredientToForm()"/><input type="text" id="ingQty" placeholder="Hoev." style="max-width:80px" onkeydown="if(event.key==='Enter')addIngredientToForm()"/><button class="ing-add-btn" onclick="addIngredientToForm()">+</button></div>
       <div class="ing-chips" id="ingPreview"></div>
     </div>
     <div style="display:flex;gap:8px"><button class="btn btn-ghost" onclick="closeNewRecipe()" style="flex:1">Annuleren</button><button class="btn btn-green" onclick="saveNewRecipe()" style="flex:2">Opslaan</button></div>
@@ -580,7 +580,7 @@ input[type=range]{width:100%;accent-color:var(--orange);height:4px;cursor:pointe
     <div class="meal-picker-card">
       <div class="meal-picker-title"><span id="mealPickerDay">Recept kiezen</span><button class="close-btn" onclick="closeMealPicker()">&#x2715;</button></div>
       <div class="meal-picker-grid" id="mealPickerGrid"></div>
-      <button class="add-week-btn" onclick="addWeekMenuToList()">&#128722; Alle ingrediënten naar boodschappen</button>
+      <button class="add-week-btn" onclick="addWeekMenuToList()">&#128722; Alle ingrediÃ«nten naar boodschappen</button>
     </div>
   </div>
   <div id="weekMenuEmpty" class="empty-state"><div class="empty-state-icon">&#128197;</div><div class="empty-state-text">Tik op een dag om een recept te plannen</div></div>
@@ -595,7 +595,7 @@ input[type=range]{width:100%;accent-color:var(--orange);height:4px;cursor:pointe
   <div class="section-header"><span class="section-title">Beloningen</span><button class="btn btn-orange" onclick="toggleAddReward()">+ Beloning</button></div>
   <div id="addRewardForm" style="display:none">
     <div class="add-reward-card">
-      <div class="form-row"><input class="f-input" type="text" id="rewardName" placeholder="Naam beloning…"/></div>
+      <div class="form-row"><input class="f-input" type="text" id="rewardName" placeholder="Naam beloningâ€¦"/></div>
       <div class="form-row"><input class="f-input" type="text" id="rewardIcon" placeholder="" style="max-width:70px"/><input class="f-input" type="number" id="rewardCost" placeholder="Punten nodig" min="1"/></div>
       <div style="display:flex;gap:8px"><button class="btn btn-ghost" onclick="toggleAddReward()" style="flex:1">Annuleren</button><button class="btn btn-orange" onclick="saveReward()" style="flex:2">Opslaan</button></div>
     </div>
@@ -611,11 +611,11 @@ input[type=range]{width:100%;accent-color:var(--orange);height:4px;cursor:pointe
 <div id="tab-chat" class="panel" style="padding:0">
   <div style="padding:16px;padding-bottom:0;font-size:18px;font-weight:900">&#128172; Gezinschat</div>
   <div style="padding:12px 16px"><select class="f-input" id="chatAs" style="margin-bottom:0">
-    <option value="">Stuur als…</option>
+    <option value="">Stuur alsâ€¦</option>
   </select></div>
   <div class="chat-wrap" id="chatMessages" style="padding:0 16px 16px"></div>
   <div class="chat-input-row">
-    <input class="chat-input" type="text" id="chatInput" placeholder="Stuur een bericht…" onkeydown="if(event.key==='Enter')sendChat()"/>
+    <input class="chat-input" type="text" id="chatInput" placeholder="Stuur een berichtâ€¦" onkeydown="if(event.key==='Enter')sendChat()"/>
     <button class="chat-send" onclick="sendChat()">&#10148;&#65039;</button>
   </div>
 </div>
@@ -634,19 +634,19 @@ input[type=range]{width:100%;accent-color:var(--orange);height:4px;cursor:pointe
 <!-- BOTTOM TAB BAR -->
 <div style="position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ddd;display:flex;z-index:9999;box-shadow:0 -2px 8px rgba(0,0,0,.06)">
   <div id="tabBtnHuis" onclick="showTab('huis',this)" style="flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 0 8px;cursor:pointer;color:#999;font-size:9px;font-family:sans-serif;font-weight:700;-webkit-tap-highlight-color:transparent">
-    <span style="font-size:22px;line-height:1.2;display:block">🏠</span>Huis
+    <span style="font-size:22px;line-height:1.2;display:block">ðŸ </span>Huis
   </div>
   <div id="tabBtnBoodschappen" onclick="showTab('boodschappen',this)" style="flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 0 8px;cursor:pointer;color:#999;font-size:9px;font-family:sans-serif;font-weight:700;-webkit-tap-highlight-color:transparent">
-    <span style="font-size:22px;line-height:1.2;display:block">🛒</span>Boodschappen
+    <span style="font-size:22px;line-height:1.2;display:block">ðŸ›’</span>Boodschappen
   </div>
   <div id="tabBtnTaken" onclick="showTab('taken',this)" style="flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 0 8px;cursor:pointer;color:#999;font-size:9px;font-family:sans-serif;font-weight:700;-webkit-tap-highlight-color:transparent">
-    <span style="font-size:22px;line-height:1.2;display:block">🗂</span>Taken
+    <span style="font-size:22px;line-height:1.2;display:block">ðŸ—‚</span>Taken
   </div>
   <div id="tabBtnAgenda" onclick="showTab('agenda',this)" style="flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 0 8px;cursor:pointer;color:#999;font-size:9px;font-family:sans-serif;font-weight:700;-webkit-tap-highlight-color:transparent">
-    <span style="font-size:22px;line-height:1.2;display:block">📅</span>Agenda
+    <span style="font-size:22px;line-height:1.2;display:block">ðŸ“…</span>Agenda
   </div>
   <div id="tabBtnMeer" onclick="toggleMoreMenu(this)" style="flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 0 8px;cursor:pointer;color:#999;font-size:9px;font-family:sans-serif;font-weight:700;-webkit-tap-highlight-color:transparent">
-    <span style="font-size:16px;line-height:1.6;display:block">···</span>Meer
+    <span style="font-size:16px;line-height:1.6;display:block">Â·Â·Â·</span>Meer
   </div>
 </div>
 
@@ -677,7 +677,7 @@ function testSupabase(){
           out.innerHTML+='<br><br><b>'+rows.length+' rijen gevonden:</b><br>';
           rows.forEach(function(row){
             var v=JSON.stringify(row.value).substring(0,100);
-            out.innerHTML+='• '+row.key+': '+v+'<br>';
+            out.innerHTML+='â€¢ '+row.key+': '+v+'<br>';
           });
         }
       }catch(e){
@@ -685,7 +685,7 @@ function testSupabase(){
       }
     })
     .catch(function(e){
-      out.innerHTML+='<br>❌ FAIL: '+e.message;
+      out.innerHTML+='<br>âŒ FAIL: '+e.message;
     });
 }
 
@@ -721,7 +721,7 @@ function forceHardReload(){
   },300);
 }
 
-// ── AUTO VERSION CHECK ──
+// â”€â”€ AUTO VERSION CHECK â”€â”€
 var APP_VERSION='1783263443';
 function checkAppVersion(){
   // Fetch the current HTML from server with cache-buster
@@ -750,7 +750,7 @@ setInterval(checkAppVersion,30000);
 // Check immediately on load
 setTimeout(checkAppVersion,2000);
 
-// ── LOGIN SYSTEEM ──
+// â”€â”€ LOGIN SYSTEEM â”€â”€
 var currentUser=null;
 var loginSelectedId=null;
 
@@ -921,7 +921,7 @@ var COLORS=['#6A9FD4','#F5A623','#6DBF87','#E8728A','#9B7DD4','#D4A843'];
 
 function sv(k,v){try{localStorage.setItem('th5_'+k,JSON.stringify(v))}catch(e){}}
 function ld(k,fb){try{var v=localStorage.getItem('th5_'+k);return v!==null?JSON.parse(v):fb}catch(e){return fb}}
-// ── SUPABASE INTEGRATIE ──
+// â”€â”€ SUPABASE INTEGRATIE â”€â”€
 var SUPABASE_URL='https://fviilnyjyebaftcnxpxr.supabase.co';
 var SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2aWlsbnlqeWViYWZ0Y254cHhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxMjM5NDMsImV4cCI6MjA5ODY5OTk0M30.E-_cm-3P-rXaabqaolvz8YjoUI7iMDM-OC6qWvB_OA0';
 var syncInterval=null;
@@ -964,25 +964,7 @@ function sbSave(key,value){
   }catch(e){showSbDebug('sbSave exception '+key+': '+e.message);}
 }
 
-function showSbDebug(msg){
-  var d=document.getElementById('sbDebug');
-  if(!d){
-    d=document.createElement('div');
-    d.id='sbDebug';
-    d.style.cssText='position:fixed;top:5px;left:5px;right:5px;background:rgba(0,0,0,.9);color:#0f0;font-family:monospace;font-size:10px;padding:6px;border-radius:6px;z-index:99999;max-height:200px;overflow-y:auto;line-height:1.4';
-    document.body.appendChild(d);
-    var close=document.createElement('button');
-    close.textContent='X';
-    close.style.cssText='position:absolute;top:2px;right:2px;background:#f00;color:white;border:none;border-radius:4px;padding:2px 6px;font-size:10px;cursor:pointer';
-    close.onclick=function(){d.style.display='none';};
-    d.appendChild(close);
-  }
-  d.style.display='block';
-  var line=document.createElement('div');
-  line.textContent=new Date().toLocaleTimeString()+' '+msg;
-  d.appendChild(line);
-  while(d.children.length>25)d.removeChild(d.children[1]);
-}
+function showSbDebug(){}
 
 
 // Load all data from Supabase
@@ -1144,7 +1126,7 @@ var chatId=ld('chatId',10);
 var notifications=[{id:1,title:'Voetbaltraining',body:'Tom \u2014 morgen om 17:30',time:'Vandaag',read:false},{id:2,title:'Goedkeuring nodig',body:'Tom heeft "Stofzuigen" ingeleverd',time:'Zojuist',read:false}];
 var notifId=10;
 
-// ── UTILS ──
+// â”€â”€ UTILS â”€â”€
 function getMember(id){return members.find(function(m){return m.id===id})}
 function toast(msg){var t=document.getElementById('toast');if(!t)return;t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},2400)}
 function closeAll(){document.getElementById('notifPanel').classList.remove('open');document.getElementById('overlay').classList.remove('show');var mm=document.getElementById('memberModal');if(mm)mm.style.display='none';}
@@ -1213,11 +1195,11 @@ function playChatSound(){
 }
 updateNotifDot();
 
-// ── PERMS ──
+// â”€â”€ PERMS â”€â”€
 function togglePerm(id){var el=document.getElementById(id);el.classList.toggle('on');perms[id]=el.classList.contains('on');saveAll()}
 function initPerms(){Object.keys(perms).forEach(function(k){var el=document.getElementById(k);if(el){if(perms[k])el.classList.add('on');else el.classList.remove('on')}})}
 
-// ── MEMBERS ──
+// â”€â”€ MEMBERS â”€â”€
 function renderMemberStrip(){
   var s=document.getElementById('memberStrip');
   var h='<div class="member-pill'+(activeMember===null?' active':'')+'" onclick="setActiveMember(null)"><div class="member-avatar" style="background:rgba(255,255,255,.3);color:white">\uD83C\uDFE0</div>Iedereen</div>';
@@ -1354,7 +1336,7 @@ function deleteMember(id){
 function doDeleteMember(id){members=members.filter(function(m){return m.id!==id});if(activeMember===id)activeMember=null;renderMemberCards();renderMemberStrip();saveAll()}
 renderMemberStrip();
 
-// ── GROCERIES ──
+// â”€â”€ GROCERIES â”€â”€
 function getAvailShops(){var s=new Set(groceries.filter(function(g){return !g.done}).map(function(g){return g.shop}));var sarr=[];s.forEach(function(v){sarr.push(v)});return['Alle winkels'].concat(sarr)}
 function renderShopTabs(){document.getElementById('shopTabs').innerHTML=getAvailShops().map(function(s){var n=s==='Alle winkels'?groceries.filter(function(g){return !g.done}).length:groceries.filter(function(g){return !g.done&&g.shop===s}).length;return'<div class="filter-pill'+(activeShop===s?' active':'')+'" onclick="setShop('+JSON.stringify(s)+')">'+(s==='Alle winkels'?'\uD83D\uDED2 ':'')+s+'<span class="pill-count">'+n+'</span></div>'}).join('')}
 function setShop(s){activeShop=s;renderShopTabs();renderGroceries()}
@@ -1388,7 +1370,7 @@ function cycleAssign(id){var g=groceries.find(function(x){return x.id===id});if(
 function changeShop(id,shop){var g=groceries.find(function(x){return x.id===id});if(!g)return;g.shop=shop;renderGroceries();saveAll();toast(g.name+' \u2192 '+shop)}
 renderGroceries();
 
-// ── TASKS ──
+// â”€â”€ TASKS â”€â”€
 function renderTaskAssignSelects(){['taskAssign','taskAssign2'].forEach(function(sid){var s=document.getElementById(sid);if(!s)return;var label=sid==='taskAssign'?'Iedereen':'Extra persoon (optioneel)';s.innerHTML='<option value="">'+label+'</option>'+members.map(function(m){return'<option value="'+m.id+'">'+m.name+'</option>'}).join('')})}
 function renderTaskFilterTabs(){var filters=['Alle','Open','Klaar','Goedkeuring'];document.getElementById('taskFilterTabs').innerHTML=filters.map(function(f){var n=f==='Alle'?tasks.filter(function(t){return !t.done}).length:f==='Open'?tasks.filter(function(t){return !t.done&&!t.pending}).length:f==='Klaar'?tasks.filter(function(t){return t.done}).length:tasks.filter(function(t){return t.pending}).length;return'<div class="filter-pill'+(activeTaskFilter===f?' active':'')+'" onclick="setTaskFilter(\''+f+'\')">'+f+'<span class="pill-count">'+n+'</span></div>'}).join('')}
 function setTaskFilter(f){activeTaskFilter=f;renderTaskFilterTabs();renderTasks()}
@@ -1504,7 +1486,7 @@ function clearDoneTasks(){tasks=tasks.filter(function(t){return !t.done});render
 function nudgeTask(id){var t=tasks.find(function(x){return x.id===id});if(!t)return;var ids=t.assignedTo.filter(function(id){return id});ids.forEach(function(mid){var m=getMember(mid);if(m){addNotif('\uD83D\uDCE2 Herinnering voor '+m.name,t.name+' staat nog open!');var chat={id:++chatId,from:'system',text:'\uD83D\uDCE2 '+m.name+', vergeet niet: '+t.name,time:new Date().toLocaleTimeString('nl',{hour:'2-digit',minute:'2-digit'})};chats.push(chat);sv('chats',chats);sv('chatId',chatId);renderChat()}});toast('Herinnering verstuurd \uD83D\uDCE2')}
 renderTasks();
 
-// ── AGENDA ──
+// â”€â”€ AGENDA â”€â”€
 function renderEvtWhoSelect(){var s=document.getElementById('evtWho');if(!s)return;s.innerHTML='<option value="">\uD83D\uDC64 Iedereen</option>'+members.map(function(m){return'<option value="'+m.id+'">'+m.name+'</option>'}).join('')}
 function changeMonth(d){curMonth+=d;if(curMonth>11){curMonth=0;curYear++}if(curMonth<0){curMonth=11;curYear--}renderCalendar()}
 function getExpandedEvents(){
@@ -1590,7 +1572,7 @@ function deleteEventSeries(id){events=events.filter(function(e){return e.id!==id
 document.getElementById('evtDate').value=todayStr();
 renderCalendar();
 
-// ── LAMPEN ──
+// â”€â”€ LAMPEN â”€â”€
 
 
 
@@ -1603,7 +1585,7 @@ renderCalendar();
 
 
 
-// ── RECEPTEN ──
+// â”€â”€ RECEPTEN â”€â”€
 function getRecipeCats(){var seen={},cats=[];recipes.forEach(function(r){if(!seen[r.cat]){seen[r.cat]=1;cats.push(r.cat)}});return['Alle'].concat(cats)}
 function renderRecipeCatTabs(){document.getElementById('recipeCatTabs').innerHTML=getRecipeCats().map(function(c){return'<div class="filter-pill'+(activeRecipeCat===c?' active':'')+'" onclick="setRecipeCat(\''+c+'\')">'+c+'<span class="pill-count">'+(c==='Alle'?recipes.length:recipes.filter(function(r){return r.cat===c}).length)+'</span></div>'}).join('')}
 function setRecipeCat(c){activeRecipeCat=c;renderRecipeCatTabs();renderRecipeGrid()}
@@ -1672,7 +1654,7 @@ function saveNewRecipe(){
   var persons=parseInt(document.getElementById('nrfPersons').value)||4;
   var steps=document.getElementById('nrfSteps').value.trim();
   if(!name){toast('Geef het recept een naam');return;}
-  if(!newIngredients.length){toast('Voeg minimaal 1 ingrediënt toe');return;}
+  if(!newIngredients.length){toast('Voeg minimaal 1 ingrediÃ«nt toe');return;}
   if(editingRecipeId!==null){
     // Update existing recipe
     var r=recipes.find(function(x){return x.id===editingRecipeId;});
@@ -1690,7 +1672,7 @@ renderRecipeCatTabs();renderRecipeGrid();
 
 function aiImportRecipe(){var input=document.getElementById('aiImportInput').value.trim();if(!input){toast('Beschrijf eerst een gerecht');return}document.getElementById('aiLoading').style.display='flex';document.getElementById('aiImportInput').disabled=true;fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:'Maak een recept voor: '+input+'. Geef ALLEEN een geldig JSON object terug zonder markdown. Velden: name, emoji (1 emoji), cat (kies uit: Pasta/Soep/Vlees/Vegetarisch/Vis/Ontbijt/Salade/Overig), time (getal minuten), persons (getal), ingredients (array van {name,qty,cat,shop}), steps (string zinnen gescheiden door punten).'}]})}).then(function(res){return res.json()}).then(function(data){var raw=(data.content&&data.content[0]&&data.content[0].text)||'';var r=JSON.parse(raw.replace(/```json|```/g,'').trim());r.id=++recipeId;if(!r.ingredients)r.ingredients=[];recipes.push(r);sv('recipes',recipes);sv('rId',recipeId);renderRecipeCatTabs();renderRecipeGrid();document.getElementById('aiImportInput').value='';toast(r.name+' toegevoegd via AI! \uD83E\uDD16')}).catch(function(){toast('Importeren mislukt.')}).then(function(){document.getElementById('aiLoading').style.display='none';document.getElementById('aiImportInput').disabled=false},function(){document.getElementById('aiLoading').style.display='none';document.getElementById('aiImportInput').disabled=false})}
 
-// ── WEEKMENU ──
+// â”€â”€ WEEKMENU â”€â”€
 function getWeekDays(){var days=[],d=new Date(today);var dow=d.getDay(),diff=d.getDate()-(dow===0?6:dow-1);d.setDate(diff+(weekOffset*7));for(var i=0;i<7;i++){var dd=new Date(d);dd.setDate(d.getDate()+i);days.push(dd);}return days;}
 function changeWeek(dir){weekOffset+=dir;closeMealPicker();renderWeekGrid();}
 function renderWeekGrid(){
@@ -1762,7 +1744,7 @@ function clearWeekMenu(){var prefix='w'+weekOffset+'_';Object.keys(weekMenu).for
 function addWeekMenuToList(){var count=0;var prefix2='w'+weekOffset+'_';Object.keys(weekMenu).filter(function(k){return k.indexOf(prefix2)===0;}).map(function(k){return weekMenu[k];}).forEach(function(rId){var r=recipes.find(function(x){return x.id===rId});if(!r)return;r.ingredients.forEach(function(ing){groceries.push({id:++groceryId,name:ing.name+' ('+r.name+')',qty:1,done:false,cat:ing.cat||'Overig',shop:ing.shop||'Albert Heijn',assignedTo:null});count++;})});saveAll();renderGroceries();toast(count+' ingredienten naar boodschappen');}
 renderWeekGrid();
 
-// ── BELONINGEN ──
+// â”€â”€ BELONINGEN â”€â”€
 
 function renderAdjustMember(){
   var sel=document.getElementById('adjustMember');
@@ -1876,13 +1858,13 @@ function deleteReward(id){rewards=rewards.filter(function(r){return r.id!==id});
 function redeemReward(rwId){var rw=rewards.find(function(r){return r.id===rwId});if(!rw)return;var sel=document.getElementById('rf-'+rwId);var mId=parseInt(sel.value);var m=getMember(mId);if(!m){toast('Kies een gezinslid');return}if((m.points||0)<rw.cost){toast(m.name+' heeft niet genoeg punten (\u2715 '+rw.cost+' nodig)');return}m.points-=rw.cost;pointsHistory.unshift({who:mId,task:rw.name+' ingewisseld',points:-rw.cost,date:todayStr()});if(pointsHistory.length>50)pointsHistory.pop();saveAll();renderPointsOverview();renderRewards();renderPointsHistory();renderAdjustMember();toast(m.name+' wisselt in: '+rw.name+' \uD83C\uDF81');addNotif('\uD83C\uDF81 '+m.name+' heeft '+rw.name+' ingewisseld!','Kosten: '+rw.cost+' punten')}
 renderPointsOverview();renderRewards();renderPointsHistory();
 
-// ── CHAT ──
+// â”€â”€ CHAT â”€â”€
 function renderChatAsSelect(){var s=document.getElementById('chatAs');if(!s)return;s.innerHTML='<option value="">Stuur als\u2026</option>'+members.map(function(m){return'<option value="'+m.id+'">'+m.name+'</option>'}).join('')}
 function renderChat(){var wrap=document.getElementById('chatMessages');if(!wrap)return;var badge=document.getElementById('chatBadge');if(badge)badge.style.display='none';wrap.innerHTML=chats.map(function(c){var isSystem=c.from==='system';if(isSystem)return'<div style="text-align:center;font-size:11px;color:var(--muted);font-weight:600;margin:8px 0">'+c.text+'</div>';var m=getMember(c.from);var isMe=c.from===activeMember;return'<div class="'+(isMe?'chat-me':'chat-other')+'" style="display:flex;flex-direction:column;align-items:'+(isMe?'flex-end':'flex-start')+'"><div class="chat-meta">'+(m?m.name:'?')+' \u2022 '+c.time+'</div><div class="chat-bubble '+(isMe?'me':'other')+'">'+c.text+'</div></div>'}).join('');wrap.scrollTop=wrap.scrollHeight}
 function sendChat(){var input=document.getElementById('chatInput');var fromSel=document.getElementById('chatAs');var text=input.value.trim();var fromId=fromSel?parseInt(fromSel.value):null;if(!text){toast('Typ een bericht');return}if(!fromId){toast('Kies wie je bent');return}var time=new Date().toLocaleTimeString('nl',{hour:'2-digit',minute:'2-digit'});chats.push({id:++chatId,from:fromId,text:text,time:time});input.value='';sv('chats',chats);sv('chatId',chatId);renderChat();var cb=document.getElementById('chatBadge');if(cb)cb.style.display='block'}
 renderChat();
 
-// ── MORE MENU ──
+// â”€â”€ MORE MENU â”€â”€
 function toggleMoreMenu(btn){
   var menu=document.getElementById('moreMenu');
   var ov=document.getElementById('moreOverlay');
@@ -1908,7 +1890,7 @@ function showTabFromMore(tab){
   else if(tab==='recepten'){renderRecipeCatTabs();renderRecipeGrid()}
 }
 
-// ── HUIS DASHBOARD ──
+// â”€â”€ HUIS DASHBOARD â”€â”€
 function renderHuis(){
   var now=new Date();
   var h=now.getHours();
