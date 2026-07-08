@@ -394,6 +394,19 @@ input[type=range]{width:100%;accent-color:var(--orange);height:4px;cursor:pointe
   </div>
 </div>
 
+<!-- NEW SHOP MODAL -->
+<div id="newShopModal" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:20px">
+  <div style="background:white;border-radius:20px;padding:24px;width:100%;max-width:340px;box-sizing:border-box">
+    <div style="font-size:17px;font-weight:900;color:#2C3E6B;margin-bottom:14px">Nieuwe winkel toevoegen</div>
+    <input type="text" id="newShopInput" placeholder="Bijv. Dirk, Coop, Vomar..." style="width:100%;padding:12px;border:2px solid #dde5f0;border-radius:12px;font-size:16px;font-family:sans-serif;outline:none;-webkit-appearance:none;box-sizing:border-box;margin-bottom:8px"/>
+    <div id="newShopError" style="color:#E8728A;font-size:12px;text-align:center;font-weight:700;min-height:16px;margin-bottom:8px"></div>
+    <div style="display:flex;gap:8px">
+      <button onclick="closeNewShopModal()" style="flex:1;background:#f0f4f9;color:#555;border:none;border-radius:12px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:sans-serif">Annuleren</button>
+      <button onclick="saveNewShopModal()" style="flex:2;background:#6A9FD4;color:white;border:none;border-radius:12px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:sans-serif">Toevoegen</button>
+    </div>
+  </div>
+</div>
+
 <div id="memberModal" style="display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.5);align-items:flex-end;justify-content:center">
   <div style="background:white;width:100%;border-radius:20px 20px 0 0;padding:20px;padding-bottom:100px;max-height:88vh;overflow-y:auto;box-sizing:border-box">
     <div style="font-size:17px;font-weight:900;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
@@ -738,21 +751,22 @@ function forceHardReload(){
 // ── AUTO VERSION CHECK ──
 var APP_VERSION='1783263443';
 function checkAppVersion(){
-  // Skip check if user is typing in an input field
+  // Never check while login screen is visible - user is entering PIN
+  var loginScreen=document.getElementById('loginScreen');
+  if(loginScreen&&loginScreen.style.display!=='none')return;
+  // Never check while user is typing
   var active=document.activeElement;
   if(active&&(active.tagName==='INPUT'||active.tagName==='TEXTAREA'||active.tagName==='SELECT'))return;
-  // Skip check if login PIN modal is being used
-  var loginScreen=document.getElementById('loginScreen');
-  if(loginScreen&&loginScreen.style.display!=='none'){
-    var pinSec=document.getElementById('loginPinSection');
-    if(pinSec&&pinSec.style.display!=='none')return;
-  }
+  // Never check within 30 seconds of last input activity
+  if(window._lastInputTime&&(Date.now()-window._lastInputTime<30000))return;
   fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})
     .then(function(r){return r.text();})
     .then(function(html){
       var m=html.match(/name="app-version" content="(\d+)"/);
       if(m&&m[1]!==APP_VERSION){
-        // Double-check user isn't typing right now
+        // Triple check before reload
+        var ls=document.getElementById('loginScreen');
+        if(ls&&ls.style.display!=='none')return;
         var a=document.activeElement;
         if(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA'))return;
         try{
@@ -767,10 +781,13 @@ function checkAppVersion(){
     })
     .catch(function(){});
 }
+// Track any input activity to prevent reload during typing
+document.addEventListener('input',function(){window._lastInputTime=Date.now();},true);
+document.addEventListener('focus',function(){window._lastInputTime=Date.now();},true);
 // Check every 30 seconds
-setInterval(checkAppVersion,300000);
+setInterval(checkAppVersion,600000);
 // Check immediately on load
-setTimeout(checkAppVersion,10000);
+setTimeout(checkAppVersion,30000);
 
 // ── LOGIN SYSTEEM ──
 var currentUser=null;
@@ -1117,18 +1134,52 @@ var activeShop='Alle winkels';
 var customShops=ld('customShops',[]);
 var defaultShops=['Albert Heijn','Lidl','Jumbo','Aldi','Plus','Markt/Overig'];
 function getAllShops(){return defaultShops.concat(customShops);}
-function addCustomShop(){
-  var name=prompt('Naam van de nieuwe winkel:');
-  if(!name)return null;
-  name=name.trim();
-  if(!name)return null;
+var newShopCallback=null;
+var newShopContext=null;
+function addCustomShop(callback,context){
+  newShopCallback=callback;
+  newShopContext=context||null;
+  var inp=document.getElementById('newShopInput');
+  var err=document.getElementById('newShopError');
+  if(inp)inp.value='';
+  if(err)err.textContent='';
+  var mm=document.getElementById('newShopModal');
+  if(mm)mm.style.display='flex';
+  setTimeout(function(){if(inp)inp.focus();},100);
+}
+function closeNewShopModal(){
+  var mm=document.getElementById('newShopModal');
+  if(mm)mm.style.display='none';
+  // If callback exists (from grocery item), reset dropdown to prevent __NEW__ being stuck
+  if(newShopCallback){
+    try{newShopCallback(null);}catch(e){}
+  }
+  newShopCallback=null;
+  newShopContext=null;
+}
+function saveNewShopModal(){
+  var inp=document.getElementById('newShopInput');
+  var err=document.getElementById('newShopError');
+  if(!inp){closeNewShopModal();return;}
+  var name=inp.value.trim();
+  if(!name){if(err)err.textContent='Vul een naam in';return;}
   var all=getAllShops();
-  for(var i=0;i<all.length;i++){if(all[i].toLowerCase()===name.toLowerCase()){toast('Deze winkel bestaat al');return all[i];}}
+  for(var i=0;i<all.length;i++){
+    if(all[i].toLowerCase()===name.toLowerCase()){
+      if(err)err.textContent='Deze winkel bestaat al';
+      return;
+    }
+  }
   customShops.push(name);
   sv('customShops',customShops);
-  if(typeof _sbSaveAll==='function')sbSave('customShops',customShops);
+  if(typeof sbSave==='function')sbSave('customShops',customShops);
   toast('Winkel '+name+' toegevoegd');
-  return name;
+  var mm=document.getElementById('newShopModal');
+  if(mm)mm.style.display='none';
+  var cb=newShopCallback;
+  newShopCallback=null;
+  newShopContext=null;
+  if(cb)cb(name);
 }
 var activeTaskFilter='Alle';
 
@@ -1403,9 +1454,30 @@ function renderGroceries(){
   var gb=document.getElementById('grocBadge');if(gb){gb.textContent=undoneCount;}
 }
 function gCard(g){var m=getMember(g.assignedTo);var shops=getAllShops();var opts=shops.map(function(s){return'<option value="'+s+'"'+(g.shop===s?' selected':'')+'>'+s+'</option>'}).join('')+'<option value="__NEW__">+ Nieuwe winkel...</option>';return'<div class="card grocery-item'+(g.done?' done':'')+'"><label><input type="checkbox" '+(g.done?'checked':'')+' onchange="toggleGrocery('+g.id+')"><span>'+g.name+'</span></label><select class="shop-sel" onchange="changeShop('+g.id+',this.value)">'+opts+'</select><div class="qty-wrap"><button class="qty-btn" onclick="changeQty('+g.id+',-1)">\u2212</button><span class="qty-val">'+g.qty+'</span><button class="qty-btn" onclick="changeQty('+g.id+',1)">+</button></div><button class="assign-btn" onclick="cycleAssign('+g.id+')" style="background:'+(m?m.color+'33':'#eee')+';color:'+(m?m.color:'#999')+'">'+(m?m.name.charAt(0):'?')+'</button><button class="del-btn" onclick="deleteGrocery('+g.id+')">\xd7</button></div>'}
-function addGrocery(){var name=document.getElementById('groceryInput').value.trim();var cat=document.getElementById('groceryCat').value;var shop=document.getElementById('groceryShop').value;
-if(shop==='__NEW__'){var newShop=addCustomShop();if(!newShop){document.getElementById('groceryShop').selectedIndex=0;return;}shop=newShop;}
-if(!name)return;groceries.push({id:++groceryId,name:name,qty:1,done:false,cat:cat,shop:shop,assignedTo:activeMember});document.getElementById('groceryInput').value='';renderGroceries();saveAll();toast(name+' toegevoegd \u2713')}
+function addGrocery(){
+  var name=document.getElementById('groceryInput').value.trim();
+  var cat=document.getElementById('groceryCat').value;
+  var shop=document.getElementById('groceryShop').value;
+  if(shop==='__NEW__'){
+    addCustomShop(function(newShop){
+      var sel=document.getElementById('groceryShop');
+      if(!newShop){if(sel)sel.selectedIndex=0;return;}
+      if(sel){
+        // Add option and select it
+        var opt=document.createElement('option');
+        opt.value=newShop;opt.textContent=newShop;opt.selected=true;
+        sel.insertBefore(opt,sel.querySelector('option[value="__NEW__"]'));
+      }
+      // Retry addGrocery with the new shop
+      addGroceryWithShop(name,cat,newShop);
+    });
+    return;
+  }
+  if(!name)return;
+  addGroceryWithShop(name,cat,shop);
+}
+function addGroceryWithShop(name,cat,shop){
+  if(!name)return;groceries.push({id:++groceryId,name:name,qty:1,done:false,cat:cat,shop:shop,assignedTo:activeMember});document.getElementById('groceryInput').value='';renderGroceries();saveAll();toast(name+' toegevoegd \u2713')}
 function toggleGrocery(id){var g=groceries.find(function(x){return x.id===id});if(g)g.done=!g.done;renderGroceries();saveAll()}
 function changeQty(id,d){var g=groceries.find(function(x){return x.id===id});if(g)g.qty=Math.max(1,g.qty+d);renderGroceries();saveAll()}
 function deleteGrocery(id){groceries=groceries.filter(function(x){return x.id!==id});renderGroceries();saveAll()}
@@ -1413,9 +1485,12 @@ function clearDone(){groceries=groceries.filter(function(x){return !x.done});ren
 function cycleAssign(id){var g=groceries.find(function(x){return x.id===id});if(!g)return;var opts=[null].concat(members.map(function(m){return m.id}));g.assignedTo=opts[(opts.indexOf(g.assignedTo)+1)%opts.length];renderGroceries();saveAll();var m=getMember(g.assignedTo);toast(m?g.name+' \u2192 '+m.name:g.name+' \u2192 Iedereen')}
 function changeShop(id,val){
   if(val==='__NEW__'){
-    var newShop=addCustomShop();
-    if(!newShop){renderGroceries();return;}
-    val=newShop;
+    addCustomShop(function(newShop){
+      if(!newShop){renderGroceries();return;}
+      var g=groceries.find(function(x){return x.id===id});
+      if(g){g.shop=newShop;saveAll();renderGroceries();toast(g.name+' -> '+newShop);}
+    });
+    return;
   }
   var g=groceries.find(function(x){return x.id===id});
   if(g){g.shop=val;saveAll();renderGroceries();}
