@@ -394,6 +394,19 @@ input[type=range]{width:100%;accent-color:var(--orange);height:4px;cursor:pointe
   </div>
 </div>
 
+<!-- SHOPS MANAGER MODAL -->
+<div id="shopsManagerModal" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:20px">
+  <div style="background:white;border-radius:20px;padding:24px;width:100%;max-width:340px;max-height:80vh;overflow-y:auto;box-sizing:border-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div style="font-size:17px;font-weight:900;color:#2C3E6B">Winkels beheren</div>
+      <button onclick="closeShopsManager()" style="background:#f0f4f9;border:none;border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;color:#555">&#x2715;</button>
+    </div>
+    <div style="font-size:12px;color:#999;margin-bottom:10px">Standaard winkels kun je niet verwijderen. Zelf toegevoegde winkels kun je verwijderen met de x knop.</div>
+    <div id="shopsManagerList"></div>
+    <button onclick="addCustomShop()" style="width:100%;background:#6A9FD4;color:white;border:none;border-radius:12px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:sans-serif;margin-top:10px">+ Nieuwe winkel toevoegen</button>
+  </div>
+</div>
+
 <!-- NEW SHOP MODAL -->
 <div id="newShopModal" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:20px">
   <div style="background:white;border-radius:20px;padding:24px;width:100%;max-width:340px;box-sizing:border-box">
@@ -472,6 +485,7 @@ input[type=range]{width:100%;accent-color:var(--orange);height:4px;cursor:pointe
 
 
 <div id="tab-boodschappen" class="panel">
+  <div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button onclick="openShopsManager()" style="background:#f0f4f9;border:1px solid #ddd;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;color:#555">Winkels beheren</button></div>
   <div style="margin-bottom:14px">
     <div class="form-row">
       <input class="f-input" type="text" id="groceryInput" placeholder="Artikel toevoegen…" onkeydown="if(event.key==='Enter')addGrocery()">
@@ -1132,6 +1146,8 @@ var activeMember=null;
 var perms=ld('perms',{permAddTask:false,permAddGrocery:true,permSeeRewards:true,permCalendar:true,pins:{}});
 var activeShop='Alle winkels';
 var customShops=ld('customShops',[]);
+// Dedupe on load
+(function(){var seen={};customShops=customShops.filter(function(s){var lower=(s||'').toLowerCase();if(!lower||seen[lower])return false;seen[lower]=true;return true;});sv('customShops',customShops);})();
 var defaultShops=['Albert Heijn','Lidl','Jumbo','Aldi','Plus','Markt/Overig'];
 function getAllShops(){return defaultShops.concat(customShops);}
 var newShopCallback=null;
@@ -1150,13 +1166,71 @@ function addCustomShop(callback,context){
 function closeNewShopModal(){
   var mm=document.getElementById('newShopModal');
   if(mm)mm.style.display='none';
-  // If callback exists (from grocery item), reset dropdown to prevent __NEW__ being stuck
+  // Reset the "add grocery" dropdown to first option if it's on __NEW__
+  var addSel=document.getElementById('groceryShop');
+  if(addSel&&addSel.value==='__NEW__')addSel.selectedIndex=0;
+  // If callback exists (from grocery item), reset dropdown
   if(newShopCallback){
     try{newShopCallback(null);}catch(e){}
   }
   newShopCallback=null;
   newShopContext=null;
+  // Refresh so any grocery item dropdowns showing __NEW__ get reset
+  if(typeof renderGroceries==='function')renderGroceries();
 }
+
+function openShopsManager(){
+  renderShopsManager();
+  var mm=document.getElementById('shopsManagerModal');
+  if(mm)mm.style.display='flex';
+}
+function closeShopsManager(){
+  var mm=document.getElementById('shopsManagerModal');
+  if(mm)mm.style.display='none';
+}
+function renderShopsManager(){
+  var list=document.getElementById('shopsManagerList');
+  if(!list)return;
+  var all=getAllShops();
+  list.innerHTML=all.map(function(s){
+    var isDefault=defaultShops.indexOf(s)>=0;
+    return '<div style="display:flex;align-items:center;gap:8px;background:#F0F4F9;border-radius:10px;padding:10px 12px;margin-bottom:6px">'
+      +'<div style="flex:1;font-size:13px;font-weight:700;color:#2C3E6B">'+s+'</div>'
+      +(isDefault?'<div style="font-size:10px;color:#999;font-weight:600">Standaard</div>':'<button data-shopname="'+s+'" data-action="delshop" style="background:none;border:none;color:#aaa;font-size:22px;cursor:pointer;padding:4px 8px;min-width:36px;min-height:36px">x</button>')
+      +'</div>';
+  }).join('');
+  list.onclick=function(e){
+    var btn=e.target;
+    while(btn&&btn!==list){
+      if(btn.getAttribute&&btn.getAttribute('data-action')==='delshop')break;
+      btn=btn.parentNode;
+    }
+    if(!btn||btn===list)return;
+    var shopName=btn.getAttribute('data-shopname');
+    deleteCustomShop(shopName);
+  };
+}
+function deleteCustomShop(name){
+  // Move groceries to default
+  var moved=0;
+  groceries.forEach(function(g){if(g.shop===name){g.shop='Albert Heijn';moved++;}});
+  // Remove from customShops
+  customShops=customShops.filter(function(s){return s!==name;});
+  sv('customShops',customShops);
+  if(typeof sbSave==='function')sbSave('customShops',customShops);
+  saveAll();
+  renderShopsManager();
+  renderGroceries();
+  // Also refresh the add-grocery dropdown
+  var addSel=document.getElementById('groceryShop');
+  if(addSel){
+    for(var i=addSel.options.length-1;i>=0;i--){
+      if(addSel.options[i].value===name){addSel.remove(i);break;}
+    }
+  }
+  toast('Winkel '+name+' verwijderd'+(moved>0?' ('+moved+' boodschappen verplaatst)':''));
+}
+
 function saveNewShopModal(){
   var inp=document.getElementById('newShopInput');
   var err=document.getElementById('newShopError');
@@ -1171,8 +1245,32 @@ function saveNewShopModal(){
     }
   }
   customShops.push(name);
+  // Deduplicate customShops (safety)
+  var seen={};
+  customShops=customShops.filter(function(s){
+    var lower=s.toLowerCase();
+    if(seen[lower])return false;
+    seen[lower]=true;
+    return true;
+  });
   sv('customShops',customShops);
   if(typeof sbSave==='function')sbSave('customShops',customShops);
+  // Update the "add grocery" select in the header - add option BEFORE __NEW__ (only if not exists)
+  var addSel=document.getElementById('groceryShop');
+  if(addSel){
+    var exists=false;
+    for(var oi=0;oi<addSel.options.length;oi++){
+      if(addSel.options[oi].value===name){exists=true;break;}
+    }
+    if(!exists){
+      var newOpt=document.createElement('option');
+      newOpt.value=name;newOpt.textContent=name;
+      var newOptPos=addSel.querySelector('option[value="__NEW__"]');
+      if(newOptPos)addSel.insertBefore(newOpt,newOptPos);
+      else addSel.appendChild(newOpt);
+    }
+    addSel.value=name;
+  }
   toast('Winkel '+name+' toegevoegd');
   var mm=document.getElementById('newShopModal');
   if(mm)mm.style.display='none';
@@ -1180,6 +1278,8 @@ function saveNewShopModal(){
   newShopCallback=null;
   newShopContext=null;
   if(cb)cb(name);
+  // Refresh all grocery items so their dropdowns include the new shop
+  if(typeof renderGroceries==='function')renderGroceries();
 }
 var activeTaskFilter='Alle';
 
@@ -1420,7 +1520,31 @@ function savePinModal(){
   closePinModal();
   toast('PIN voor '+(m?m.name:'')+' bijgewerkt');
 }
-function addMember(){var name=document.getElementById('newMemberName').value.trim();var role=document.getElementById('newMemberRole').value;if(!name)return;var id=++memberId;members.push({id:id,name:name,color:COLORS[id%COLORS.length],role:role,points:0});document.getElementById('newMemberName').value='';renderMemberCards();renderMemberStrip();renderPointsOverview();saveAll();toast(name+' toegevoegd \uD83D\uDC64')}
+function addMember(){
+  var nameEl=document.getElementById('newMemberName');
+  var roleEl=document.getElementById('newMemberRole');
+  if(!nameEl||!roleEl)return;
+  var name=nameEl.value.trim();
+  var role=roleEl.value;
+  if(!name){toast('Vul een naam in');return;}
+  var colors=['#6A9FD4','#F5A623','#6DBF87','#E8728A','#9B7DD4','#F5A623','#4EC5C0','#D4A843'];
+  var color=colors[members.length%colors.length];
+  var newM={id:++memberId,name:name,role:role,color:color,points:0};
+  members.push(newM);
+  nameEl.value='';
+  saveAll();
+  renderMemberStrip();
+  renderMemberCards();
+  renderAdjustMember();
+  toast(name+' toegevoegd');
+  // Ask if we want to set a PIN now
+  setTimeout(function(){
+    if(confirm('PIN instellen voor '+name+'?')){
+      resetMemberPin(newM.id);
+    }
+  },400);
+}
+
 function deleteMember(id){
   var isOuder=currentUser&&getMember(currentUser)&&getMember(currentUser).role==='Ouder';
   if(!isOuder){requestParentPin(function(){doDeleteMember(id);});return;}
@@ -1460,15 +1584,9 @@ function addGrocery(){
   var shop=document.getElementById('groceryShop').value;
   if(shop==='__NEW__'){
     addCustomShop(function(newShop){
-      var sel=document.getElementById('groceryShop');
-      if(!newShop){if(sel)sel.selectedIndex=0;return;}
-      if(sel){
-        // Add option and select it
-        var opt=document.createElement('option');
-        opt.value=newShop;opt.textContent=newShop;opt.selected=true;
-        sel.insertBefore(opt,sel.querySelector('option[value="__NEW__"]'));
-      }
-      // Retry addGrocery with the new shop
+      if(!newShop){var sel=document.getElementById('groceryShop');if(sel)sel.selectedIndex=0;return;}
+      // saveNewShopModal already added the option and selected it
+      // Just proceed with adding the grocery
       addGroceryWithShop(name,cat,newShop);
     });
     return;
