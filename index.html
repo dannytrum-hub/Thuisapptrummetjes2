@@ -587,6 +587,20 @@ input[type=range]{width:100%;accent-color:var(--orange);height:4px;cursor:pointe
 </div>
 
 <div id="tab-beloningen" class="panel">
+  <!-- Punten aanpassen (alleen ouders) -->
+  <div style="background:white;border-radius:16px;padding:14px;margin-bottom:14px;box-shadow:0 1px 6px rgba(0,0,0,.07);border:2px solid #DDE5F0">
+    <div style="font-size:12px;font-weight:800;color:#999;text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px">Punten aanpassen</div>
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <select id="adjustMember" style="flex:1;border:2px solid #DDE5F0;border-radius:10px;padding:9px 12px;font-family:sans-serif;font-size:16px;outline:none"></select>
+      <input type="number" id="adjustAmount" placeholder="Punten" style="width:90px;border:2px solid #DDE5F0;border-radius:10px;padding:9px 12px;font-family:sans-serif;font-size:16px;outline:none"/>
+    </div>
+    <input type="text" id="adjustReason" placeholder="Reden (optioneel)" style="width:100%;border:2px solid #DDE5F0;border-radius:10px;padding:9px 12px;font-family:sans-serif;font-size:16px;outline:none;box-sizing:border-box;margin-bottom:8px"/>
+    <div style="display:flex;gap:8px">
+      <button onclick="adjustPoints(1)" style="flex:1;background:#6DBF87;color:white;border:none;border-radius:10px;padding:10px;font-family:sans-serif;font-size:13px;font-weight:700;cursor:pointer">+ Toevoegen</button>
+      <button onclick="adjustPoints(-1)" style="flex:1;background:#E8728A;color:white;border:none;border-radius:10px;padding:10px;font-family:sans-serif;font-size:13px;font-weight:700;cursor:pointer">- Aftrekken</button>
+      <button onclick="adjustPoints(0)" style="flex:1;background:#94A3BE;color:white;border:none;border-radius:10px;padding:10px;font-family:sans-serif;font-size:13px;font-weight:700;cursor:pointer">Reset 0</button>
+    </div>
+  </div>
   <div class="points-hero">
     <div class="points-hero-title">Puntenoverzicht</div>
     <div class="points-hero-sub">Verdien punten door taken te voltooien</div>
