@@ -1056,7 +1056,8 @@ function sbLoad(callback){
           else if(key==='pointsHistory'&&val){pointsHistory=val;sv('pointsHistory',pointsHistory);}
           else if(key==='chats'&&val){chats=val;sv('chats',chats);}
           else if(key==='perms'&&val){perms=val;sv('perms',perms);}
-          else if(key==='notifications'&&val){notifications=val;sv('notifications',notifications);if(typeof updateNotifDot==='function')updateNotifDot();}
+          else if(key==='notifsClearedAt'&&val){var newClearedAt=parseInt(val)||0;if(newClearedAt>notifsClearedAt){notifsClearedAt=newClearedAt;sv('notifsClearedAt',notifsClearedAt);notifications=notifications.filter(function(n){return (n.ts||0)>notifsClearedAt;});sv('notifications',notifications);sv('notifsClearedAt',notifsClearedAt);if(typeof updateNotifDot==='function')updateNotifDot();}}
+          else if(key==='notifications'&&val){notifications=val.filter(function(n){return (n.ts||0)>=notifsClearedAt;});sv('notifications',notifications);if(typeof updateNotifDot==='function')updateNotifDot();}
           else if(key==='customShops'&&Array.isArray(val)){customShops=val;sv('customShops',customShops);}
         }
         var loginScreen=document.getElementById('loginScreen');
@@ -1099,6 +1100,7 @@ var _sbSaveAll=function(){
   sbSave('perms',perms);
   sbSave('notifications',notifications);
   sbSave('customShops',customShops);
+  sbSave('notifsClearedAt',notifsClearedAt);
 };
 
 // Show sync status
@@ -1146,6 +1148,7 @@ var activeMember=null;
 var perms=ld('perms',{permAddTask:false,permAddGrocery:true,permSeeRewards:true,permCalendar:true,pins:{}});
 var activeShop='Alle winkels';
 var customShops=ld('customShops',[]);
+var notifsClearedAt=ld('notifsClearedAt',0);
 // Dedupe on load
 (function(){var seen={};customShops=customShops.filter(function(s){var lower=(s||'').toLowerCase();if(!lower||seen[lower])return false;seen[lower]=true;return true;});sv('customShops',customShops);})();
 var defaultShops=['Albert Heijn','Lidl','Jumbo','Aldi','Plus','Markt/Overig'];
@@ -1341,8 +1344,14 @@ function clearNotifs(){
   doClearNotifs();
 }
 function doClearNotifs(){
-  if(!confirm('Alle meldingen wissen?'))return;
   notifications=[];
+  notifsClearedAt=Date.now();
+  sv('notifsClearedAt',notifsClearedAt);
+  if(typeof sbSave==='function'){
+    sbSave('notifications',notifications);
+    sbSave('notifsClearedAt',notifsClearedAt);
+  }
+  saveAll();
   updateNotifDot();
   renderNotifs();
   var clearBtn=document.getElementById('clearNotifsBtn');
@@ -1368,7 +1377,7 @@ function playNotifSound(){
     osc.stop(ctx.currentTime+0.4);
   }catch(e){}
 }
-function addNotif(title,body){notifications.unshift({id:++notifId,title:title,body:body,time:'Zojuist',read:false});updateNotifDot();playNotifSound();}
+function addNotif(title,body){notifications.unshift({id:++notifId,title:title,body:body,time:'Zojuist',read:false,ts:Date.now()});updateNotifDot();playNotifSound();}
 function playChatSound(){
   try{
     var AudioCtx=window.AudioContext||window.webkitAudioContext;
