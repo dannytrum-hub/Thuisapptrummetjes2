@@ -471,7 +471,7 @@ input[type=range]{width:100%;accent-color:var(--orange);height:4px;cursor:pointe
     </div>
     <div class="form-row">
       <select class="f-input" id="groceryShop">
-        <option>Albert Heijn</option><option>Lidl</option><option>Jumbo</option><option>Aldi</option><option>Plus</option><option>Markt/Overig</option>
+        <option>Albert Heijn</option><option>Lidl</option><option>Jumbo</option><option>Aldi</option><option>Plus</option><option>Markt/Overig</option><option value="__NEW__">+ Nieuwe winkel...</option>
       </select>
       <button class="btn btn-green" onclick="addGrocery()">+ Toevoegen</button>
     </div>
@@ -1026,6 +1026,7 @@ function sbLoad(callback){
           else if(key==='chats'&&val){chats=val;sv('chats',chats);}
           else if(key==='perms'&&val){perms=val;sv('perms',perms);}
           else if(key==='notifications'&&val){notifications=val;sv('notifications',notifications);if(typeof updateNotifDot==='function')updateNotifDot();}
+          else if(key==='customShops'&&Array.isArray(val)){customShops=val;sv('customShops',customShops);}
         }
         var loginScreen=document.getElementById('loginScreen');
         if(loginScreen&&loginScreen.style.display!=='none'){
@@ -1066,6 +1067,7 @@ var _sbSaveAll=function(){
   sbSave('chats',chats);
   sbSave('perms',perms);
   sbSave('notifications',notifications);
+  sbSave('customShops',customShops);
 };
 
 // Show sync status
@@ -1112,6 +1114,22 @@ var memberId=ld('mId',10);
 var activeMember=null;
 var perms=ld('perms',{permAddTask:false,permAddGrocery:true,permSeeRewards:true,permCalendar:true,pins:{}});
 var activeShop='Alle winkels';
+var customShops=ld('customShops',[]);
+var defaultShops=['Albert Heijn','Lidl','Jumbo','Aldi','Plus','Markt/Overig'];
+function getAllShops(){return defaultShops.concat(customShops);}
+function addCustomShop(){
+  var name=prompt('Naam van de nieuwe winkel:');
+  if(!name)return null;
+  name=name.trim();
+  if(!name)return null;
+  var all=getAllShops();
+  for(var i=0;i<all.length;i++){if(all[i].toLowerCase()===name.toLowerCase()){toast('Deze winkel bestaat al');return all[i];}}
+  customShops.push(name);
+  sv('customShops',customShops);
+  if(typeof _sbSaveAll==='function')sbSave('customShops',customShops);
+  toast('Winkel '+name+' toegevoegd');
+  return name;
+}
 var activeTaskFilter='Alle';
 
 var groceries=ld('groceries',[{id:1,name:'Melk',qty:1,done:false,cat:'Zuivel',shop:'Albert Heijn',assignedTo:null},{id:2,name:'Brood',qty:2,done:false,cat:'Bakkerij',shop:'Albert Heijn',assignedTo:1},{id:3,name:'Appels',qty:6,done:true,cat:'Groente',shop:'Lidl',assignedTo:2},{id:4,name:'Wijn',qty:1,done:false,cat:'Dranken',shop:'Jumbo',assignedTo:null}]);
@@ -1384,17 +1402,25 @@ function renderGroceries(){
   var undoneCount=all.filter(function(g){return !g.done}).length;
   var gb=document.getElementById('grocBadge');if(gb){gb.textContent=undoneCount;}
 }
-function gCard(g){var m=getMember(g.assignedTo);var shops=['Albert Heijn','Lidl','Jumbo','Aldi','Plus','Markt/Overig'];var opts=shops.map(function(s){return'<option value="'+s+'"'+(g.shop===s?' selected':'')+'>'+s+'</option>'}).join('');return'<div class="card grocery-item'+(g.done?' done':'')+'"><label><input type="checkbox" '+(g.done?'checked':'')+' onchange="toggleGrocery('+g.id+')"><span>'+g.name+'</span></label><select class="shop-sel" onchange="changeShop('+g.id+',this.value)">'+opts+'</select><div class="qty-wrap"><button class="qty-btn" onclick="changeQty('+g.id+',-1)">\u2212</button><span class="qty-val">'+g.qty+'</span><button class="qty-btn" onclick="changeQty('+g.id+',1)">+</button></div><button class="assign-btn" onclick="cycleAssign('+g.id+')" style="background:'+(m?m.color+'33':'#eee')+';color:'+(m?m.color:'#999')+'">'+(m?m.name.charAt(0):'?')+'</button><button class="del-btn" onclick="deleteGrocery('+g.id+')">\xd7</button></div>'}
-function addGrocery(){var name=document.getElementById('groceryInput').value.trim();var cat=document.getElementById('groceryCat').value;var shop=document.getElementById('groceryShop').value;if(!name)return;groceries.push({id:++groceryId,name:name,qty:1,done:false,cat:cat,shop:shop,assignedTo:activeMember});document.getElementById('groceryInput').value='';renderGroceries();saveAll();toast(name+' toegevoegd \u2713')}
+function gCard(g){var m=getMember(g.assignedTo);var shops=getAllShops();var opts=shops.map(function(s){return'<option value="'+s+'"'+(g.shop===s?' selected':'')+'>'+s+'</option>'}).join('')+'<option value="__NEW__">+ Nieuwe winkel...</option>';return'<div class="card grocery-item'+(g.done?' done':'')+'"><label><input type="checkbox" '+(g.done?'checked':'')+' onchange="toggleGrocery('+g.id+')"><span>'+g.name+'</span></label><select class="shop-sel" onchange="changeShop('+g.id+',this.value)">'+opts+'</select><div class="qty-wrap"><button class="qty-btn" onclick="changeQty('+g.id+',-1)">\u2212</button><span class="qty-val">'+g.qty+'</span><button class="qty-btn" onclick="changeQty('+g.id+',1)">+</button></div><button class="assign-btn" onclick="cycleAssign('+g.id+')" style="background:'+(m?m.color+'33':'#eee')+';color:'+(m?m.color:'#999')+'">'+(m?m.name.charAt(0):'?')+'</button><button class="del-btn" onclick="deleteGrocery('+g.id+')">\xd7</button></div>'}
+function addGrocery(){var name=document.getElementById('groceryInput').value.trim();var cat=document.getElementById('groceryCat').value;var shop=document.getElementById('groceryShop').value;
+if(shop==='__NEW__'){var newShop=addCustomShop();if(!newShop){document.getElementById('groceryShop').selectedIndex=0;return;}shop=newShop;}
+if(!name)return;groceries.push({id:++groceryId,name:name,qty:1,done:false,cat:cat,shop:shop,assignedTo:activeMember});document.getElementById('groceryInput').value='';renderGroceries();saveAll();toast(name+' toegevoegd \u2713')}
 function toggleGrocery(id){var g=groceries.find(function(x){return x.id===id});if(g)g.done=!g.done;renderGroceries();saveAll()}
 function changeQty(id,d){var g=groceries.find(function(x){return x.id===id});if(g)g.qty=Math.max(1,g.qty+d);renderGroceries();saveAll()}
 function deleteGrocery(id){groceries=groceries.filter(function(x){return x.id!==id});renderGroceries();saveAll()}
 function clearDone(){groceries=groceries.filter(function(x){return !x.done});renderGroceries();saveAll();toast('Klare artikelen gewist \u2713')}
 function cycleAssign(id){var g=groceries.find(function(x){return x.id===id});if(!g)return;var opts=[null].concat(members.map(function(m){return m.id}));g.assignedTo=opts[(opts.indexOf(g.assignedTo)+1)%opts.length];renderGroceries();saveAll();var m=getMember(g.assignedTo);toast(m?g.name+' \u2192 '+m.name:g.name+' \u2192 Iedereen')}
-function changeShop(id,shop){var g=groceries.find(function(x){return x.id===id});if(!g)return;g.shop=shop;renderGroceries();saveAll();toast(g.name+' \u2192 '+shop)}
-renderGroceries();
+function changeShop(id,val){
+  if(val==='__NEW__'){
+    var newShop=addCustomShop();
+    if(!newShop){renderGroceries();return;}
+    val=newShop;
+  }
+  var g=groceries.find(function(x){return x.id===id});
+  if(g){g.shop=val;saveAll();renderGroceries();}
+}
 
-// ── TASKS ──
 function renderTaskAssignSelects(){['taskAssign','taskAssign2'].forEach(function(sid){var s=document.getElementById(sid);if(!s)return;var label=sid==='taskAssign'?'Iedereen':'Extra persoon (optioneel)';s.innerHTML='<option value="">'+label+'</option>'+members.map(function(m){return'<option value="'+m.id+'">'+m.name+'</option>'}).join('')})}
 function renderTaskFilterTabs(){var filters=['Alle','Open','Klaar','Goedkeuring'];document.getElementById('taskFilterTabs').innerHTML=filters.map(function(f){var n=f==='Alle'?tasks.filter(function(t){return !t.done}).length:f==='Open'?tasks.filter(function(t){return !t.done&&!t.pending}).length:f==='Klaar'?tasks.filter(function(t){return t.done}).length:tasks.filter(function(t){return t.pending}).length;return'<div class="filter-pill'+(activeTaskFilter===f?' active':'')+'" onclick="setTaskFilter(\''+f+'\')">'+f+'<span class="pill-count">'+n+'</span></div>'}).join('')}
 function setTaskFilter(f){activeTaskFilter=f;renderTaskFilterTabs();renderTasks()}
