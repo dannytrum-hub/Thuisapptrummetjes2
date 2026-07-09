@@ -1940,29 +1940,56 @@ function renderWeekGrid(){
     var ds=fmtDate(day.getFullYear(),day.getMonth(),day.getDate());
     var isToday=ds===ts;
     var key="w"+weekOffset+"_"+i;
-    var rId=weekMenu[key];
-    var recipe=rId!=null?recipes.find(function(r){return r.id===rId;}):null;
-    return '<div class="week-day-cell'+(isToday?' today-cell':'')+( recipe?' has-meal':'')+'" data-dayidx="'+i+'" data-dayname="'+DNAMES[day.getDay()]+'">'
-      +'<div class="wk-day-name">'+DSHORT[day.getDay()]+'</div>'
-      +'<div class="wk-day-num">'+day.getDate()+'</div>'
-      +(recipe?'<div class="wk-meal-emoji">'+recipe.emoji+'</div><div class="wk-meal-name">'+recipe.name+'</div>':'<div class="wk-empty">+</div>')
+    var current=weekMenu[key];
+    // Convert old format to array
+    var meals=[];
+    if(typeof current==='number'){meals=[{rId:current}];}
+    else if(Array.isArray(current)){meals=current;}
+    var mealsHtml='';
+    if(meals.length>0){
+      mealsHtml=meals.map(function(meal,mIdx){
+        if(meal.rId!=null){
+          var recipe=recipes.find(function(r){return r.id===meal.rId;});
+          if(!recipe)return '';
+          return '<div style="background:#F0F4F9;border-radius:8px;padding:6px 8px;margin-bottom:4px;display:flex;align-items:center;gap:6px;font-size:11px"><span style="font-size:14px">'+recipe.emoji+'</span><span style="flex:1;font-weight:700;color:#2C3E6B">'+recipe.name+'</span><button data-daykey="'+key+'" data-mealidx="'+mIdx+'" data-action="delmeal" style="background:none;border:none;color:#aaa;font-size:14px;cursor:pointer;padding:0 4px;line-height:1">x</button></div>';
+        } else if(meal.text){
+          return '<div style="background:#FEF5E7;border-radius:8px;padding:6px 8px;margin-bottom:4px;display:flex;align-items:center;gap:6px;font-size:11px"><span style="font-size:12px">Menu</span><span style="flex:1;font-weight:700;color:#2C3E6B">'+meal.text+'</span><button data-daykey="'+key+'" data-mealidx="'+mIdx+'" data-action="delmeal" style="background:none;border:none;color:#aaa;font-size:14px;cursor:pointer;padding:0 4px;line-height:1">x</button></div>';
+        }
+        return '';
+      }).join('');
+    }
+    return '<div class="week-day-cell'+(isToday?' today-cell':'')+(meals.length>0?' has-meal':'')+'" style="min-height:auto;padding:10px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+        +'<div><span class="wk-day-name">'+DSHORT[day.getDay()]+'</span> <span class="wk-day-num">'+day.getDate()+'</span></div>'
+        +'<button data-dayidx="'+i+'" data-dayname="'+DNAMES[day.getDay()]+'" data-action="add" style="background:#6A9FD4;color:white;border:none;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:700;cursor:pointer">+ toevoegen</button>'
+      +'</div>'
+      +mealsHtml
       +'</div>';
   }).join("");
   var grid=document.getElementById("weekGrid");
   if(grid){
     grid.innerHTML=html;
     grid.onclick=function(e){
-      var cell=e.target;
-      while(cell&&cell!==grid){
-        if(cell.getAttribute&&cell.getAttribute("data-dayidx")!==null)break;
-        cell=cell.parentNode;
+      var btn=e.target;
+      while(btn&&btn!==grid){
+        if(btn.getAttribute&&btn.getAttribute("data-action"))break;
+        btn=btn.parentNode;
       }
-      if(!cell||cell===grid)return;
-      openMealPicker(parseInt(cell.getAttribute("data-dayidx")),cell.getAttribute("data-dayname"));
+      if(!btn||btn===grid)return;
+      var action=btn.getAttribute("data-action");
+      if(action==='add'){
+        openMealPicker(parseInt(btn.getAttribute("data-dayidx")),btn.getAttribute("data-dayname"));
+      } else if(action==='delmeal'){
+        removeMeal(btn.getAttribute('data-daykey'),parseInt(btn.getAttribute('data-mealidx')));
+      }
     };
   }
   var wme=document.getElementById("weekMenuEmpty");
-  if(wme)wme.style.display=Object.keys(weekMenu).length?"none":"block";
+  if(wme){
+    var hasAny=false;
+    Object.keys(weekMenu).forEach(function(k){var c=weekMenu[k];if(c&&(typeof c==='number'||(Array.isArray(c)&&c.length>0)))hasAny=true;});
+    wme.style.display=hasAny?"none":"block";
+  }
 }
 function openMealPicker(dayIndex,dayName){
   selWeekDay=dayIndex;
@@ -1970,13 +1997,21 @@ function openMealPicker(dayIndex,dayName){
   if(dayEl)dayEl.textContent=dayName;
   var grid=document.getElementById('mealPickerGrid');
   if(grid){
-    grid.innerHTML=recipes.map(function(r){
-      return '<div class="meal-pick-card" data-rid="'+r.id+'" style="cursor:pointer">'
-        +'<div class="meal-pick-emoji">'+r.emoji+'</div>'
-        +'<div><div class="meal-pick-name">'+r.name+'</div>'
-        +'<div class="meal-pick-meta">'+r.time+' min</div></div>'
-        +'</div>';
-    }).join('');
+    // Add text input at top
+    grid.innerHTML='<div style="grid-column:1/-1;background:#FEF5E7;border:2px solid #F5A623;border-radius:12px;padding:10px;margin-bottom:8px">'
+      +'<div style="font-size:11px;font-weight:700;color:#C47A00;margin-bottom:6px;text-transform:uppercase">Zelf maaltijd invoeren</div>'
+      +'<div style="display:flex;gap:6px">'
+        +'<input type="text" id="mealTextInput" placeholder="Bijv. Pizza bestellen" style="flex:1;border:1.5px solid #F5A623;border-radius:8px;padding:8px 10px;font-family:sans-serif;font-size:14px;outline:none;box-sizing:border-box"/>'
+        +'<button onclick="submitMealText()" style="background:#F5A623;color:white;border:none;border-radius:8px;padding:8px 14px;font-family:sans-serif;font-size:13px;font-weight:700;cursor:pointer">Voeg toe</button>'
+      +'</div>'
+      +'</div>'
+      +recipes.map(function(r){
+        return '<div class="meal-pick-card" data-rid="'+r.id+'" style="cursor:pointer">'
+          +'<div class="meal-pick-emoji">'+r.emoji+'</div>'
+          +'<div><div class="meal-pick-name">'+r.name+'</div>'
+          +'<div class="meal-pick-meta">'+r.time+' min</div></div>'
+          +'</div>';
+      }).join('');
     grid.onclick=function(e){
       var card=e.target;
       while(card&&card!==grid){
@@ -1990,14 +2025,76 @@ function openMealPicker(dayIndex,dayName){
   var mp=document.getElementById('mealPicker');
   if(mp)mp.style.display='block';
 }
+function submitMealText(){
+  var inp=document.getElementById('mealTextInput');
+  if(!inp)return;
+  var text=inp.value.trim();
+  if(!text){toast('Vul een naam in');return;}
+  assignMealText(text);
+}
 function closeMealPicker(){document.getElementById('mealPicker').style.display='none';selWeekDay=null}
-function assignMeal(rId){if(selWeekDay===null)return;weekMenu['w'+weekOffset+'_'+selWeekDay]=rId;closeMealPicker();renderWeekGrid();saveAll();var r=recipes.find(function(x){return x.id===rId});toast((r?r.name:'Recept')+' gepland!');}
+function assignMeal(rId){
+  if(selWeekDay===null)return;
+  var key='w'+weekOffset+'_'+selWeekDay;
+  var current=weekMenu[key];
+  // Convert old format (single number) to array
+  if(typeof current==='number')current=[{rId:current}];
+  if(!Array.isArray(current))current=[];
+  current.push({rId:rId});
+  weekMenu[key]=current;
+  closeMealPicker();
+  renderWeekGrid();
+  saveAll();
+  var r=recipes.find(function(x){return x.id===rId;});
+  toast((r?r.name:'Recept')+' toegevoegd');
+}
+function assignMealText(text){
+  if(selWeekDay===null||!text)return;
+  var key='w'+weekOffset+'_'+selWeekDay;
+  var current=weekMenu[key];
+  if(typeof current==='number')current=[{rId:current}];
+  if(!Array.isArray(current))current=[];
+  current.push({text:text});
+  weekMenu[key]=current;
+  closeMealPicker();
+  renderWeekGrid();
+  saveAll();
+  toast(text+' toegevoegd');
+}
+function removeMeal(dayKey,idx){
+  var current=weekMenu[dayKey];
+  if(typeof current==='number')current=[{rId:current}];
+  if(!Array.isArray(current))return;
+  current.splice(idx,1);
+  if(current.length===0)delete weekMenu[dayKey];
+  else weekMenu[dayKey]=current;
+  renderWeekGrid();
+  saveAll();
+}
 function clearWeekMenu(){var prefix='w'+weekOffset+'_';Object.keys(weekMenu).forEach(function(k){if(k.indexOf(prefix)===0)delete weekMenu[k];});renderWeekGrid();saveAll();toast('Week gewist');}
-function addWeekMenuToList(){var count=0;var prefix2='w'+weekOffset+'_';Object.keys(weekMenu).filter(function(k){return k.indexOf(prefix2)===0;}).map(function(k){return weekMenu[k];}).forEach(function(rId){var r=recipes.find(function(x){return x.id===rId});if(!r)return;r.ingredients.forEach(function(ing){groceries.push({id:++groceryId,name:ing.name+' ('+r.name+')',qty:1,done:false,cat:ing.cat||'Overig',shop:ing.shop||'Albert Heijn',assignedTo:null});count++;})});saveAll();renderGroceries();toast(count+' ingredienten naar boodschappen');}
-renderWeekGrid();
-
-// ── BELONINGEN ──
-
+function addWeekMenuToList(){
+  var count=0;
+  var prefix='w'+weekOffset+'_';
+  Object.keys(weekMenu).filter(function(k){return k.indexOf(prefix)===0;}).forEach(function(k){
+    var current=weekMenu[k];
+    var meals=[];
+    if(typeof current==='number')meals=[{rId:current}];
+    else if(Array.isArray(current))meals=current;
+    meals.forEach(function(meal){
+      if(meal.rId!=null){
+        var r=recipes.find(function(x){return x.id===meal.rId;});
+        if(!r)return;
+        r.ingredients.forEach(function(ing){
+          groceries.push({id:++groceryId,name:ing.name+' ('+r.name+')',qty:1,done:false,cat:ing.cat||'Overig',shop:ing.shop||'Albert Heijn',assignedTo:null});
+          count++;
+        });
+      }
+    });
+  });
+  saveAll();
+  renderGroceries();
+  toast(count+' ingredienten naar boodschappen');
+}
 function renderAdjustMember(){
   var sel=document.getElementById('adjustMember');
   if(!sel)return;
