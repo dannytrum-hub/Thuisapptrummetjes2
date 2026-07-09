@@ -1050,7 +1050,7 @@ function sbLoad(callback){
           else if(key==='groceries'&&val){groceries=val;sv('groceries',groceries);}
           else if(key==='tasks'&&val){tasks=val;sv('tasks',tasks);}
           else if(key==='events'&&val){events=val;sv('events',events);}
-          else if(key==='recipes'&&val){recipes=val;sv('recipes',recipes);}
+          else if(key==='recipes'&&val){recipes=val.filter(function(r){return deletedRecipeIds.indexOf(r.id)===-1;});sv('recipes',recipes);}
           else if(key==='weekMenu'&&val){weekMenu=val;sv('weekMenu',weekMenu);}
           else if(key==='rewards'&&val){rewards=val;sv('rewards',rewards);}
           else if(key==='pointsHistory'&&val){pointsHistory=val;sv('pointsHistory',pointsHistory);}
@@ -1058,7 +1058,8 @@ function sbLoad(callback){
           else if(key==='perms'&&val){perms=val;sv('perms',perms);}
           else if(key==='notifsClearedAt'&&val){var newClearedAt=parseInt(val)||0;if(newClearedAt>notifsClearedAt){notifsClearedAt=newClearedAt;sv('notifsClearedAt',notifsClearedAt);notifications=notifications.filter(function(n){return (n.ts||0)>notifsClearedAt;});sv('notifications',notifications);sv('notifsClearedAt',notifsClearedAt);if(typeof updateNotifDot==='function')updateNotifDot();}}
           else if(key==='notifications'&&val){notifications=val.filter(function(n){return (n.ts||0)>=notifsClearedAt;});sv('notifications',notifications);if(typeof updateNotifDot==='function')updateNotifDot();}
-          else if(key==='customShops'&&Array.isArray(val)){customShops=val;sv('customShops',customShops);}
+          else if(key==='customShops'&&Array.isArray(val)){customShops=val;sv('customShops',customShops);sv('deletedRecipeIds',deletedRecipeIds);}
+          else if(key==='deletedRecipeIds'&&Array.isArray(val)){deletedRecipeIds=val;sv('deletedRecipeIds',deletedRecipeIds);recipes=recipes.filter(function(r){return deletedRecipeIds.indexOf(r.id)===-1;});sv('recipes',recipes);}
         }
         var loginScreen=document.getElementById('loginScreen');
         if(loginScreen&&loginScreen.style.display!=='none'){
@@ -1100,6 +1101,7 @@ var _sbSaveAll=function(){
   sbSave('perms',perms);
   sbSave('notifications',notifications);
   sbSave('customShops',customShops);
+  sbSave('deletedRecipeIds',deletedRecipeIds);
   sbSave('notifsClearedAt',notifsClearedAt);
 };
 
@@ -1148,6 +1150,7 @@ var activeMember=null;
 var perms=ld('perms',{permAddTask:false,permAddGrocery:true,permSeeRewards:true,permCalendar:true,pins:{}});
 var activeShop='Alle winkels';
 var customShops=ld('customShops',[]);
+var deletedRecipeIds=ld('deletedRecipeIds',[]);
 var notifsClearedAt=ld('notifsClearedAt',0);
 // Dedupe on load
 (function(){var seen={};customShops=customShops.filter(function(s){var lower=(s||'').toLowerCase();if(!lower||seen[lower])return false;seen[lower]=true;return true;});sv('customShops',customShops);})();
@@ -1221,6 +1224,7 @@ function deleteCustomShop(name){
   customShops=customShops.filter(function(s){return s!==name;});
   sv('customShops',customShops);
   if(typeof sbSave==='function')sbSave('customShops',customShops);
+  sbSave('deletedRecipeIds',deletedRecipeIds);
   saveAll();
   renderShopsManager();
   renderGroceries();
@@ -1258,6 +1262,7 @@ function saveNewShopModal(){
   });
   sv('customShops',customShops);
   if(typeof sbSave==='function')sbSave('customShops',customShops);
+  sbSave('deletedRecipeIds',deletedRecipeIds);
   // Update the "add grocery" select in the header - add option BEFORE __NEW__ (only if not exists)
   var addSel=document.getElementById('groceryShop');
   if(addSel){
@@ -1304,6 +1309,7 @@ var roomsIkea=[];
 
 
 var recipes=ld('recipes',[{id:1,name:'Spaghetti Bolognese',emoji:'\uD83C\uDF5D',cat:'Pasta',time:40,persons:4,ingredients:[{name:'Spaghetti',qty:'400g',cat:'Bakkerij',shop:'Albert Heijn'},{name:'Gehakt',qty:'400g',cat:'Vlees',shop:'Albert Heijn'},{name:'Tomatensaus',qty:'1 pot',cat:'Overig',shop:'Albert Heijn'},{name:'Ui',qty:'1 stuk',cat:'Groente',shop:'Lidl'},{name:'Parmezaan',qty:'50g',cat:'Zuivel',shop:'Albert Heijn'}],steps:'Fruit ui. Voeg gehakt toe. Voeg tomatensaus toe en laat sudderen. Kook spaghetti. Serveer met parmezaan.'},{id:2,name:'Tomatensoep',emoji:'\uD83C\uDF45',cat:'Soep',time:25,persons:4,ingredients:[{name:'Tomaten blik',qty:'2 blikken',cat:'Overig',shop:'Jumbo'},{name:'Ui',qty:'2 stuks',cat:'Groente',shop:'Jumbo'},{name:'Bouillon',qty:'1 liter',cat:'Overig',shop:'Jumbo'},{name:'Room',qty:'100ml',cat:'Zuivel',shop:'Jumbo'}],steps:'Fruit ui. Voeg tomaten en bouillon toe. Pureer. Roer room erdoor.'},{id:3,name:'Avocado Toast',emoji:'\uD83E\uDD51',cat:'Ontbijt',time:10,persons:2,ingredients:[{name:'Zuurdesembrood',qty:'4 sneden',cat:'Bakkerij',shop:'Albert Heijn'},{name:'Avocado',qty:'2 stuks',cat:'Groente',shop:'Lidl'},{name:'Limoen',qty:'1 stuk',cat:'Groente',shop:'Lidl'}],steps:'Rooster brood. Prak avocado met limoen. Smeer op brood.'}]);
+recipes=recipes.filter(function(r){return deletedRecipeIds.indexOf(r.id)===-1;});
 var recipeId=ld('rId',10);
 var activeRecipeCat='Alle';
 var newIngredients=[];
@@ -1852,7 +1858,16 @@ function changePortions(d){var r=recipes.find(function(x){return x.id===curRecip
 function toggleIng(i,el){checkedIngredients[i]=el.checked;var l=document.getElementById('il'+i);if(l)l.classList.toggle('checked',el.checked)}
 function addRecipeToList(id){var r=recipes.find(function(x){return x.id===id});if(!r)return;var ratio=curPortions/r.persons;var count=0;r.ingredients.forEach(function(ing,i){if(!checkedIngredients[i]){var base=parseFloat(ing.qty)||1;groceries.push({id:++groceryId,name:ing.name+' ('+r.name+')',qty:Math.max(1,Math.round(base*ratio)),done:false,cat:ing.cat||'Overig',shop:ing.shop||'Albert Heijn',assignedTo:null});count++}});saveAll();toast(count+' ingredi\u00EBnt'+(count!==1?'en':'')+' toegevoegd \uD83D\uDED2')}
 function closeRecipe(){document.getElementById('recepten-overzicht').style.display='';document.getElementById('recepten-detail').style.display='none';renderRecipeCatTabs();renderRecipeGrid()}
-function deleteRecipe(id){recipes=recipes.filter(function(r){return r.id!==id});sv('recipes',recipes);closeRecipe();toast('Recept verwijderd')}
+function deleteRecipe(id){
+  recipes=recipes.filter(function(r){return r.id!==id;});
+  if(deletedRecipeIds.indexOf(id)===-1)deletedRecipeIds.push(id);
+  sv('recipes',recipes);
+  sv('deletedRecipeIds',deletedRecipeIds);
+  if(typeof sbSave==='function'){sbSave('recipes',recipes);sbSave('deletedRecipeIds',deletedRecipeIds);}
+  saveAll();
+  closeRecipe();
+  toast('Recept verwijderd');
+}
 
 function editRecipe(id){
   var r=recipes.find(function(x){return x.id===id;});
