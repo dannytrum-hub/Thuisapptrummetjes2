@@ -243,8 +243,8 @@ input[type=range]{width:100%;accent-color:var(--orange);height:4px;cursor:pointe
 .ing-chip-item:hover{background:var(--pink-light);color:var(--pink)}
 
 /* WEEKMENU */
-.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:16px}
-.week-day-cell{background:white;border-radius:var(--radius-sm);padding:8px 5px;text-align:center;min-height:92px;cursor:pointer;border:2px solid var(--border);transition:all .2s}
+.week-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.week-day-cell{background:white;border-radius:var(--radius-sm);padding:12px 14px;cursor:pointer;border:2px solid var(--border);transition:all .2s}
 .week-day-cell.today-cell{border-color:var(--orange)}
 .week-day-cell.has-meal{background:var(--green-light);border-color:var(--green)}
 .wk-day-name{font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:3px}
